@@ -215,11 +215,12 @@ hs.forEach(function(h){ob.observe(h)});
 </body>
 </html>`;
 
-      // Write directly to dist/index.html
+      // Write to BOTH root index.html AND dist/index.html
+      fs.writeFileSync(path.resolve('index.html'), finalHtml, 'utf-8');
       const distDir = path.resolve('dist');
       if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
       fs.writeFileSync(path.join(distDir, 'index.html'), finalHtml, 'utf-8');
-      console.log(`✅ Single HTML file written: dist/index.html (${(finalHtml.length / 1024).toFixed(1)} KB)`);
+      console.log(`✅ Single HTML file written: index.html (${(finalHtml.length / 1024).toFixed(1)} KB)`);
     }
   };
 }
