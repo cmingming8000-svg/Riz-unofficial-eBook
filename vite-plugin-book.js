@@ -95,7 +95,7 @@ export default function rizalBookPlugin() {
       ).join('\n');
 
       const chaptersHtml = chapterData.map(ch =>
-        `<div class="ch"><h1 class="ch-heading" id="${ch.id}">${esc(ch.title)}</h1><div class="cb">${ch.html}</div></div>`
+        `<div class="chapter"><h1 class="chapter-title" id="${ch.id}">${esc(ch.title)}</h1><div class="chapter-content">${ch.html}</div></div>`
       ).join('\n');
 
       const finalHtml = `<!DOCTYPE html>
@@ -105,48 +105,290 @@ export default function rizalBookPlugin() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jose Rizal: Life, Works, and Writings of a Genius</title>
 <style>
-:root{--bg:#faf6ed;--text:#3d2b1f;--sidebar:#f5efe0;--border:#d4c5a0;--accent:#8b4513;--accent-bg:rgba(139,69,19,.08);--header-bg:rgba(245,239,224,.92)}
-[data-theme="light"]{--bg:#fff;--text:#2c2c2c;--sidebar:#f5f5f5;--border:#e0e0e0;--accent:#8b4513;--accent-bg:rgba(139,69,19,.08);--header-bg:rgba(245,245,245,.92)}
-[data-theme="dark"]{--bg:#1a1a2e;--text:#e0e0e0;--sidebar:#16213e;--border:#2a2a4a;--accent:#d4a574;--accent-bg:rgba(212,165,116,.1);--header-bg:rgba(22,33,62,.92)}
+:root{--bg:#f5f1e8;--text:#2c2416;--paper:#faf8f3;--accent:#6b4423;--accent-light:#8b6234;--border:#d4c5a0;--shadow:rgba(44,36,22,.15)}
+[data-theme="light"]{--bg:#ffffff;--text:#1a1a1a;--paper:#ffffff;--accent:#4a4a4a;--accent-light:#666666;--border:#e0e0e0;--shadow:rgba(0,0,0,.1)}
+[data-theme="dark"]{--bg:#1a1a1a;--text:#e8e8e8;--paper:#2a2a2a;--accent:#c9a882;--accent-light:#d4b896;--border:#3a3a3a;--shadow:rgba(0,0,0,.5)}
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:70px}
-body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--text);line-height:1.85;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased}
-.hdr{position:sticky;top:0;z-index:100;background:var(--header-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
-.hdr-l{display:flex;align-items:center;gap:12px}
-.menu{background:none;border:none;cursor:pointer;padding:8px;color:var(--text);font-size:20px;border-radius:6px;display:none}
-.hdr-t h1{font-size:15px;font-weight:700}
-.hdr-t p{font-size:11px;opacity:.6}
-.ctrls{display:flex;align-items:center;gap:8px}
-.fbtn{background:none;border:1px solid var(--border);padding:3px 8px;border-radius:4px;cursor:pointer;color:var(--text);font-size:12px;font-weight:700}
-.fsz{font-size:11px;opacity:.6;min-width:24px;text-align:center}
-.dots{display:flex;gap:4px;margin-left:8px}
-.dot{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);cursor:pointer;padding:0}
-.dot.on{border:2px solid var(--accent)}
-.d-l{background:#fff}.d-s{background:#faf6ed}.d-d{background:#1a1a2e}
-.wrap{display:flex}
-.side{position:fixed;top:53px;left:0;height:calc(100vh - 53px);width:300px;overflow-y:auto;z-index:90;background:var(--sidebar);border-right:1px solid var(--border);transform:translateX(-100%);transition:transform .3s;padding:20px}
-.side.open{transform:translateX(0)}
-.side h2{font-size:15px;font-weight:700;margin-bottom:16px;opacity:.8}
-.toc{list-style:none}
-.toc li{margin-bottom:2px}
-.toc a{display:block;padding:7px 12px;border-radius:6px;text-decoration:none;color:var(--text);font-size:13px;line-height:1.4;transition:all .2s;opacity:.7;border-left:3px solid transparent}
-.toc a:hover{background:var(--accent-bg);opacity:1}
-.toc a.on{background:var(--accent-bg);opacity:1;font-weight:600;border-left-color:var(--accent)}
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;display:none}
-.ov.show{display:block}
-.main{flex:1;max-width:780px;margin:0 auto;padding:40px 24px 100px;font-size:18px}
-.tp{text-align:center;padding:60px 0 80px;border-bottom:2px solid var(--accent);margin-bottom:60px}
-.tp .lb{font-size:13px;letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-bottom:20px}
-.tp h1{font-size:2.4em;font-weight:700;line-height:1.2;margin-bottom:16px}
-.tp .st{font-size:1.1em;font-style:italic;opacity:.8}
-.tp .ed{font-size:.85em;opacity:.5;margin-top:30px}
-.tp .au{font-size:.95em;opacity:.7;margin-top:8px}
-.ch{margin-bottom:80px}
-.ch-heading{font-size:1.8em;font-weight:700;line-height:1.2;margin-bottom:1.5em;padding-bottom:.4em;border-bottom:2px solid var(--accent);scroll-margin-top:70px}
-.cb h2{font-size:1.4em;font-weight:600;margin:2em 0 .6em;opacity:.9}
-.cb h3{font-size:1.15em;font-weight:600;margin:1.5em 0 .5em;opacity:.85}
-.cb h4{font-size:1.05em;font-weight:600;margin:1.2em 0 .4em;opacity:.8}
-.cb p{margin-bottom:1.2em;text-align:justify;hyphens:auto}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{
+  font-family:'Palatino Linotype','Book Antiqua',Palatino,'Times New Roman',serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.8;
+  transition:background .4s,color .4s;
+  -webkit-font-smoothing:antialiased;
+  font-size:17px;
+}
+.book-container{
+  max-width:900px;
+  margin:0 auto;
+  background:var(--paper);
+  min-height:100vh;
+  box-shadow:0 0 60px var(--shadow);
+  position:relative;
+}
+.controls{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:1000;
+  display:flex;
+  gap:10px;
+  background:var(--paper);
+  padding:10px 15px;
+  border-radius:8px;
+  box-shadow:0 4px 20px var(--shadow);
+  border:1px solid var(--border);
+}
+.ctrl-btn{
+  background:none;
+  border:1px solid var(--border);
+  padding:6px 12px;
+  border-radius:4px;
+  cursor:pointer;
+  color:var(--text);
+  font-size:13px;
+  font-weight:600;
+  transition:all .2s;
+}
+.ctrl-btn:hover{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.theme-dot{
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--border);cursor:pointer;
+  transition:all .2s;
+}
+.theme-dot:hover{transform:scale(1.1)}
+.theme-dot.active{border:3px solid var(--accent);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--accent)}
+.book-cover{
+  padding:80px 60px;
+  text-align:center;
+  border-bottom:3px double var(--accent);
+  position:relative;
+}
+.book-cover::before{
+  content:'';
+  position:absolute;
+  top:40px;left:40px;right:40px;bottom:40px;
+  border:2px solid var(--accent);
+  opacity:.3;
+  pointer-events:none;
+}
+.book-title{
+  font-size:3em;
+  font-weight:700;
+  line-height:1.2;
+  margin-bottom:20px;
+  color:var(--accent);
+  letter-spacing:.02em;
+  font-variant:small-caps;
+}
+.book-subtitle{
+  font-size:1.3em;
+  font-style:italic;
+  margin-bottom:30px;
+  opacity:.8;
+  line-height:1.5;
+}
+.book-author{
+  font-size:1.1em;
+  margin-top:40px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  opacity:.7;
+}
+.book-edition{
+  font-size:.9em;
+  margin-top:15px;
+  opacity:.5;
+  font-style:italic;
+}
+.ornament{
+  text-align:center;
+  margin:40px 0;
+  font-size:2em;
+  opacity:.3;
+  color:var(--accent);
+}
+.toc-page{
+  padding:60px;
+  border-bottom:1px solid var(--border);
+}
+.toc-title{
+  font-size:2em;
+  text-align:center;
+  margin-bottom:40px;
+  color:var(--accent);
+  font-variant:small-caps;
+  letter-spacing:.1em;
+}
+.toc-list{
+  list-style:none;
+  max-width:600px;
+  margin:0 auto;
+}
+.toc-item{
+  margin-bottom:12px;
+  padding:8px 0;
+  border-bottom:1px dotted var(--border);
+}
+.toc-item a{
+  color:var(--text);
+  text-decoration:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  transition:color .2s;
+  font-size:1.05em;
+}
+.toc-item a:hover{color:var(--accent)}
+.toc-item .chapter-num{
+  font-weight:600;
+  margin-right:10px;
+  color:var(--accent);
+}
+.chapter{
+  padding:80px 60px;
+  page-break-before:always;
+  position:relative;
+}
+.chapter:not(:last-child){
+  border-bottom:1px solid var(--border);
+}
+.chapter-title{
+  font-size:2.2em;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:50px;
+  color:var(--accent);
+  line-height:1.3;
+  font-variant:small-caps;
+  letter-spacing:.05em;
+  scroll-margin-top:80px;
+}
+.chapter-title::after{
+  content:'❦';
+  display:block;
+  margin-top:20px;
+  font-size:.6em;
+  opacity:.4;
+}
+.chapter-content{
+  text-align:justify;
+  hyphens:auto;
+  line-height:1.9;
+  font-size:1.05em;
+}
+.chapter-content p{
+  margin-bottom:1.4em;
+  text-indent:1.5em;
+}
+.chapter-content p:first-of-type{
+  text-indent:0;
+}
+.chapter-content p:first-of-type::first-letter{
+  font-size:3.5em;
+  float:left;
+  line-height:.8;
+  margin-right:.1em;
+  margin-top:.1em;
+  color:var(--accent);
+  font-weight:700;
+  font-family:'Palatino Linotype','Book Antiqua',Palatino,serif;
+}
+.chapter-content h2{
+  font-size:1.6em;
+  margin:2.5em 0 1em;
+  color:var(--accent);
+  font-weight:600;
+  text-align:center;
+  font-variant:small-caps;
+  letter-spacing:.05em;
+}
+.chapter-content h3{
+  font-size:1.3em;
+  margin:2em 0 .8em;
+  color:var(--accent-light);
+  font-weight:600;
+  font-style:italic;
+}
+.chapter-content h4{
+  font-size:1.1em;
+  margin:1.5em 0 .6em;
+  color:var(--accent-light);
+  font-weight:600;
+}
+.chapter-content blockquote{
+  margin:2em 2em;
+  padding:1em 1.5em;
+  border-left:4px solid var(--accent);
+  background:rgba(107,68,35,.05);
+  font-style:italic;
+  position:relative;
+}
+.chapter-content blockquote::before{
+  content:'"';
+  position:absolute;
+  top:-10px;
+  left:10px;
+  font-size:3em;
+  color:var(--accent);
+  opacity:.3;
+  font-family:Georgia,serif;
+}
+.chapter-content blockquote p{
+  text-indent:0;
+  margin-bottom:.8em;
+}
+.chapter-content ul,.chapter-content ol{
+  margin:1.5em 2em;
+}
+.chapter-content li{
+  margin-bottom:.6em;
+  line-height:1.7;
+}
+.chapter-content strong{
+  font-weight:700;
+  color:var(--accent);
+}
+.chapter-content em{
+  font-style:italic;
+}
+.chapter-content hr{
+  border:none;
+  height:1px;
+  background:linear-gradient(to right,transparent,var(--accent),transparent);
+  margin:3em 0;
+  opacity:.3;
+}
+.page-break{
+  text-align:center;
+  margin:60px 0;
+  font-size:1.5em;
+  opacity:.3;
+  color:var(--accent);
+}
+.colophon{
+  padding:60px;
+  text-align:center;
+  border-top:3px double var(--accent);
+  font-size:.9em;
+  opacity:.6;
+  line-height:1.8;
+}
+@media(max-width:768px){
+  .book-container{box-shadow:none}
+  .book-cover,.toc-page,.chapter{padding:40px 30px}
+  .book-title{font-size:2em}
+  .chapter-title{font-size:1.6em}
+  .controls{top:10px;right:10px;padding:8px 12px}
+  .ctrl-btn{padding:5px 10px;font-size:12px}
+  .theme-dot{width:20px;height:20px}
+}
+@media print{
+  .controls{display:none}
+  .book-container{box-shadow:none;max-width:100%}
+  .chapter{page-break-before:always}
+}
 .ch>.cb>p:first-of-type::first-letter{font-size:3.2em;float:left;line-height:.8;margin-right:.08em;margin-top:.07em;font-weight:700;color:var(--accent)}
 .cb blockquote{border-left:3px solid var(--accent);margin:1.5em 0;padding:.8em 1.2em;font-style:italic;opacity:.85;background:var(--accent-bg);border-radius:0 8px 8px 0}
 .cb blockquote p{text-align:left;margin-bottom:.5em}
@@ -167,50 +409,38 @@ body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(
 </style>
 </head>
 <body data-theme="sepia">
-<header class="hdr">
-<div class="hdr-l">
-<button class="menu" onclick="document.getElementById('sb').classList.toggle('open');document.getElementById('ov').classList.toggle('show')" aria-label="Menu">&#9776;</button>
-<div class="hdr-t"><h1>Jose Rizal</h1><p>Life, Works, and Writings of a Genius</p></div>
+<div class="controls">
+<button class="ctrl-btn" onclick="fs(-2)">A-</button>
+<span id="fl" style="min-width:30px;text-align:center">17</span>
+<button class="ctrl-btn" onclick="fs(2)">A+</button>
+<button class="theme-dot" style="background:#fff" onclick="st('light')" title="Light"></button>
+<button class="theme-dot active" style="background:#f5f1e8" onclick="st('sepia')" title="Sepia"></button>
+<button class="theme-dot" style="background:#1a1a1a" onclick="st('dark')" title="Dark"></button>
 </div>
-<div class="ctrls">
-<button class="fbtn" onclick="fs(-2)">A-</button>
-<span class="fsz" id="fl">18</span>
-<button class="fbtn" onclick="fs(2)">A+</button>
-<div class="dots">
-<button class="dot d-l" onclick="st('light')" title="Light"></button>
-<button class="dot d-s on" onclick="st('sepia')" title="Sepia"></button>
-<button class="dot d-d" onclick="st('dark')" title="Dark"></button>
+<div class="book-container" id="mc">
+<div class="book-cover">
+<div class="book-title">Jose Rizal</div>
+<div class="book-subtitle">Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero</div>
+<div class="ornament">❦</div>
+<div class="book-author">Gregorio F. Zaide &amp; Sonia M. Zaide</div>
+<div class="book-edition">Second Edition</div>
 </div>
-</div>
-</header>
-<div class="wrap">
-<aside class="side" id="sb">
-<h2>Table of Contents</h2>
-<ol class="toc">${tocHtml}</ol>
-</aside>
-<div class="ov" id="ov" onclick="document.getElementById('sb').classList.remove('open');this.classList.remove('show')"></div>
-<main class="main" id="mc">
-<div class="tp">
-<p class="lb">A Digital Edition</p>
-<h1>Jose Rizal</h1>
-<p class="st">Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero</p>
-<p class="ed">Second Edition</p>
-<p class="au">by Gregorio F. Zaide &amp; Sonia M. Zaide</p>
+<div class="toc-page">
+<div class="toc-title">Contents</div>
+<ol class="toc-list">${tocHtml.replace(/<li><a href="#([^"]+)" data-target="[^"]+">([^<]+)<\/a><\/li>/g, '<li class="toc-item"><a href="#$1">$2</a></li>')}</ol>
 </div>
 ${chaptersHtml}
-<footer class="ftr">
-<p>Based on "Jose Rizal: Life, Works, and Writings of a Genius, Writer, Scientist, and National Hero"</p>
-<p>2nd Edition by Gregorio F. Zaide and Sonia M. Zaide</p>
-</footer>
-</main>
+<div class="colophon">
+<div class="ornament">❦</div>
+<p>Based on "Jose Rizal: Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero"</p>
+<p>Second Edition by Gregorio F. Zaide and Sonia M. Zaide</p>
+<p style="margin-top:20px;font-style:italic">A Digital Edition</p>
+</div>
 </div>
 <script>
-function st(t){document.body.setAttribute('data-theme',t);document.querySelectorAll('.dot').forEach(function(d){d.classList.remove('on')});var m={light:'d-l',sepia:'d-s',dark:'d-d'};document.querySelector('.'+m[t]).classList.add('on')}
-var fz=18;function fs(d){fz=Math.max(14,Math.min(26,fz+d));document.getElementById('mc').style.fontSize=fz+'px';document.getElementById('fl').textContent=fz}
-document.querySelectorAll('.toc a').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var el=document.getElementById(this.getAttribute('data-target'));if(el)el.scrollIntoView({behavior:'smooth',block:'start'});if(window.innerWidth<1024){document.getElementById('sb').classList.remove('open');document.getElementById('ov').classList.remove('show')}})});
-var hs=document.querySelectorAll('.ch-heading'),ls=document.querySelectorAll('.toc a');
-var ob=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){ls.forEach(function(l){l.classList.remove('on')});var lk=document.querySelector('.toc a[data-target="'+e.target.id+'"]');if(lk)lk.classList.add('on')}})},{rootMargin:'-70px 0px -70% 0px'});
-hs.forEach(function(h){ob.observe(h)});
+function st(t){document.body.setAttribute('data-theme',t);document.querySelectorAll('.theme-dot').forEach(function(d){d.classList.remove('active')});event.target.classList.add('active')}
+var fz=17;function fs(d){fz=Math.max(14,Math.min(22,fz+d));document.getElementById('mc').style.fontSize=fz+'px';document.getElementById('fl').textContent=fz}
+document.querySelectorAll('.toc-item a').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var el=document.getElementById(this.getAttribute('href').substring(1));if(el)el.scrollIntoView({behavior:'smooth',block:'start'})})});
 </script>
 </body>
 </html>`;
