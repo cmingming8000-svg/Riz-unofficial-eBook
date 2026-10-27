@@ -1,100 +1,392 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jose Rizal: Life, Works, and Writings of a Genius</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <style>
-      /* 内联样式确保主题色立即生效，避免闪烁 */
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-      }
-      html.light,
-      html.light body {
-        background-color: #ffffff !important;
-        color: #000000;
-      }
-      html.dark,
-      html.dark body {
-        background-color: #1a1a1a !important;
-        color: #ffffff;
-      }
-    </style>
-    <script>
-      // 在 React 加载前立即设置主题，避免闪烁
-      (function () {
-        const isInIframe = window.self !== window.top;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jose Rizal: Life, Works, and Writings of a Genius</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf6ed;
+      --text: #3d2b1f;
+      --sidebar-bg: #f5efe0;
+      --border: #d4c5a0;
+      --accent: #8b4513;
+      --accent-light: rgba(139, 69, 19, 0.1);
+      --header-bg: rgba(245, 239, 224, 0.95);
+    }
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --sidebar-bg: #f8f8f8;
+      --border: #e0e0e0;
+      --accent: #8b4513;
+      --accent-light: rgba(139, 69, 19, 0.08);
+      --header-bg: rgba(248, 248, 248, 0.95);
+    }
+    [data-theme="dark"] {
+      --bg: #1a1a2e;
+      --text: #e0e0e0;
+      --sidebar-bg: #16213e;
+      --border: #2a2a4a;
+      --accent: #d4a574;
+      --accent-light: rgba(212, 165, 116, 0.1);
+      --header-bg: rgba(22, 33, 62, 0.95);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    body {
+      font-family: 'Lora', 'Crimson Text', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+      transition: background 0.3s, color 0.3s;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Header */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .menu-btn {
+      background: none; border: none; cursor: pointer; padding: 8px;
+      color: var(--text); font-size: 20px; border-radius: 6px;
+      display: flex; align-items: center;
+    }
+    .menu-btn:hover { background: var(--accent-light); }
+    .header-title h1 { font-size: 15px; font-weight: 700; font-family: 'Lora', serif; }
+    .header-title p { font-size: 11px; opacity: 0.6; }
+    .header-controls { display: flex; align-items: center; gap: 8px; }
+    .font-btn {
+      background: none; border: 1px solid var(--border); padding: 3px 8px;
+      border-radius: 4px; cursor: pointer; color: var(--text);
+      font-size: 12px; font-weight: bold;
+    }
+    .font-btn:hover { background: var(--accent-light); }
+    .font-size-label { font-size: 11px; opacity: 0.6; min-width: 24px; text-align: center; }
+    .theme-dots { display: flex; gap: 4px; margin-left: 8px; }
+    .theme-dot {
+      width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border);
+      cursor: pointer; padding: 0; transition: border 0.2s;
+    }
+    .theme-dot.active { border: 2px solid var(--accent); }
+    .theme-dot-light { background: #fff; }
+    .theme-dot-sepia { background: #faf6ed; }
+    .theme-dot-dark { background: #1a1a2e; }
+    /* Layout */
+    .layout { display: flex; }
+    /* Sidebar */
+    .sidebar {
+      position: fixed; top: 53px; left: 0; height: calc(100vh - 53px);
+      width: 300px; overflow-y: auto; z-index: 90;
+      background: var(--sidebar-bg); border-right: 1px solid var(--border);
+      transform: translateX(-100%); transition: transform 0.3s ease;
+      padding: 20px;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; opacity: 0.8; }
+    .toc-list { list-style: none; }
+    .toc-list li { margin-bottom: 2px; }
+    .toc-list a {
+      display: block; padding: 7px 12px; border-radius: 6px;
+      text-decoration: none; color: var(--text); font-size: 13px;
+      line-height: 1.4; transition: all 0.2s; opacity: 0.7;
+    }
+    .toc-list a:hover { background: var(--accent-light); opacity: 1; }
+    .toc-list a.active { background: var(--accent-light); opacity: 1; font-weight: 600; border-left: 3px solid var(--accent); }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 80; display: none;
+    }
+    .overlay.show { display: block; }
+    /* Main content */
+    .main-content {
+      flex: 1; max-width: 760px; margin: 0 auto;
+      padding: 40px 24px 100px;
+    }
+    /* Title page */
+    .title-page {
+      text-align: center; padding: 60px 0 80px;
+      border-bottom: 2px solid var(--accent); margin-bottom: 60px;
+    }
+    .title-page .label { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.5; margin-bottom: 20px; }
+    .title-page h1 { font-size: 2.4em; font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+    .title-page .subtitle { font-size: 1.1em; font-style: italic; opacity: 0.8; margin-bottom: 8px; }
+    .title-page .edition { font-size: 0.85em; opacity: 0.5; margin-top: 30px; }
+    .title-page .authors { font-size: 0.95em; opacity: 0.7; margin-top: 8px; }
+    /* Book typography */
+    .chapter { margin-bottom: 80px; }
+    .chapter-heading {
+      font-size: 1.8em; font-weight: 700; line-height: 1.2;
+      margin-bottom: 1.5em; padding-bottom: 0.4em;
+      border-bottom: 2px solid var(--accent);
+      scroll-margin-top: 80px;
+    }
+    .chapter h2 {
+      font-size: 1.4em; font-weight: 600; margin: 2em 0 0.6em;
+      line-height: 1.3; opacity: 0.9;
+    }
+    .chapter h3 {
+      font-size: 1.15em; font-weight: 600; margin: 1.5em 0 0.5em;
+      opacity: 0.85;
+    }
+    .chapter p { margin-bottom: 1.2em; text-align: justify; hyphens: auto; }
+    .chapter > p:first-of-type::first-letter {
+      font-size: 3.2em; float: left; line-height: 0.8;
+      margin-right: 0.08em; margin-top: 0.07em;
+      font-weight: 700; color: var(--accent);
+    }
+    .chapter blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 1.5em 0; padding: 0.8em 1.2em;
+      font-style: italic; opacity: 0.85;
+      background: var(--accent-light);
+      border-radius: 0 8px 8px 0;
+    }
+    .chapter blockquote p { text-align: left; margin-bottom: 0.5em; }
+    .chapter blockquote p:last-child { margin-bottom: 0; }
+    .chapter ul, .chapter ol { margin: 1em 0; padding-left: 1.5em; }
+    .chapter li { margin-bottom: 0.5em; line-height: 1.7; }
+    .chapter strong { font-weight: 700; }
+    .chapter em { font-style: italic; }
+    .chapter hr {
+      border: none; height: 1px;
+      background: linear-gradient(to right, transparent, var(--text), transparent);
+      opacity: 0.15; margin: 3em 0;
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+    [data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+    ::selection { background: rgba(139, 69, 19, 0.2); }
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 30px 20px; text-align: center;
+      font-size: 13px; opacity: 0.5;
+    }
+    /* Responsive */
+    @media (min-width: 1024px) {
+      .sidebar { transform: translateX(0); position: sticky; top: 53px; height: calc(100vh - 53px); }
+      .main-content { margin-left: 300px; }
+      .menu-btn { display: none; }
+      .overlay { display: none !important; }
+    }
+    @media (max-width: 640px) {
+      .chapter-heading { font-size: 1.4em; }
+      .chapter h2 { font-size: 1.2em; }
+      .chapter > p:first-of-type::first-letter { font-size: 2.5em; }
+      .title-page h1 { font-size: 1.8em; }
+      .header-title p { display: none; }
+    }
+    /* Print */
+    @media print {
+      .header, .sidebar, .overlay, .menu-btn { display: none !important; }
+      .main-content { margin: 0; max-width: none; padding: 20px; }
+      .chapter { page-break-before: always; }
+    }
+  </style>
+</head>
+<body data-theme="sepia">
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 
-        function applyThemeToDOM(theme) {
-          document.documentElement.classList.remove("light", "dark");
-          document.documentElement.classList.add(theme);
-          document.documentElement.setAttribute("data-theme", theme);
-        }
+  <!-- Book Content (rendered outside React for single-file output) -->
+  <div id="book-app">
+    <header class="header">
+      <div class="header-left">
+        <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+        <div class="header-title">
+          <h1>Jose Rizal</h1>
+          <p>Life, Works, and Writings of a Genius</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <button class="font-btn" onclick="changeFontSize(-2)">A-</button>
+        <span class="font-size-label" id="fontSizeLabel">18</span>
+        <button class="font-btn" onclick="changeFontSize(2)">A+</button>
+        <div class="theme-dots">
+          <button class="theme-dot theme-dot-light" onclick="setTheme('light')" title="Light"></button>
+          <button class="theme-dot theme-dot-sepia active" onclick="setTheme('sepia')" title="Sepia"></button>
+          <button class="theme-dot theme-dot-dark" onclick="setTheme('dark')" title="Dark"></button>
+        </div>
+      </div>
+    </header>
 
-        if (isInIframe) {
-          // 监听父窗口主动推送的主题消息
-          window.addEventListener("message", function (event) {
-            if (event.data && typeof event.data.theme === "string") {
-              const theme = event.data.theme;
-              if (theme === "light" || theme === "dark") {
-                applyThemeToDOM(theme);
-              }
-            }
-          });
-        } else {
-          // 非 iframe 环境，使用默认 light 主题
-          applyThemeToDOM("light");
+    <div class="layout">
+      <aside class="sidebar" id="sidebar">
+        <h2>Table of Contents</h2>
+        <ol class="toc-list" id="tocList"></ol>
+      </aside>
+      <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+      <main class="main-content" id="mainContent">
+        <div class="title-page">
+          <p class="label">A Digital Edition</p>
+          <h1>Jose Rizal</h1>
+          <p class="subtitle">Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero</p>
+          <p class="edition">Second Edition</p>
+          <p class="authors">by Gregorio F. Zaide &amp; Sonia M. Zaide</p>
+        </div>
+        <div id="bookContent"></div>
+        <footer class="footer">
+          <p>Based on "Jose Rizal: Life, Works, and Writings of a Genius, Writer, Scientist, and National Hero"</p>
+          <p>2nd Edition by Gregorio F. Zaide and Sonia M. Zaide</p>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Theme
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+      document.querySelector('.theme-dot-' + theme).classList.add('active');
+    }
+    // Font size
+    let currentFontSize = 18;
+    function changeFontSize(delta) {
+      currentFontSize = Math.max(14, Math.min(26, currentFontSize + delta));
+      document.getElementById('mainContent').style.fontSize = currentFontSize + 'px';
+      document.getElementById('fontSizeLabel').textContent = currentFontSize;
+    }
+    // Sidebar
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('show');
+    }
+    
+    // Markdown to HTML converter
+    function mdToHtml(md) {
+      let html = md;
+      // Headers
+      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      // Blockquotes (multi-line)
+      html = html.replace(/(^> .+(\n> .+)*)/gm, (match) => {
+        const content = match.replace(/^> /gm, '');
+        return '<blockquote>' + content.split('\n').map(p => p.trim() ? '<p>' + p + '</p>' : '').join('') + '</blockquote>';
+      });
+      // Bold and italic
+      html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      // Horizontal rules
+      html = html.replace(/^---$/gm, '<hr>');
+      // Unordered lists
+      html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+      html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+      // Ordered lists
+      html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+      // Paragraphs
+      html = html.replace(/\n\n/g, '</p><p>');
+      html = '<p>' + html + '</p>';
+      // Clean up
+      html = html.replace(/<p><(h[1-3]|blockquote|ul|ol|hr)/g, '<$1');
+      html = html.replace(/<\/(h[1-3]|blockquote|ul|ol|hr)><\/p>/g, '</$1>');
+      html = html.replace(/<p><\/p>/g, '');
+      html = html.replace(/<p>\s*<\/p>/g, '');
+      return html;
+    }
+
+    // Chapter data
+    const chapters = [
+      { id: 'prologue', title: 'Prologue: Rizal and His Times', file: 'PROLOGUE.md' },
+      { id: 'ch1', title: 'Chapter 1: Advent of A National Hero', file: 'Chapter1.md' },
+      { id: 'ch2', title: 'Chapter 2: Childhood Years in Calamba', file: 'Chapter2.md' },
+      { id: 'ch3', title: 'Chapter 3: Early Education in Calamba and Biñan', file: 'Chapter3.md' },
+      { id: 'ch4', title: 'Chapter 4: Scholastic Triumphs at Ateneo de Manila', file: 'Chapter4.md' },
+      { id: 'ch5', title: 'Chapter 5: Medical Studies at UST (1877-1882)', file: 'Chapter5.md' },
+      { id: 'ch6', title: 'Chapter 6: In Sunny Spain (1882-1885)', file: 'Chapter6.md' },
+      { id: 'ch7', title: 'Chapter 7: Paris to Berlin (1885-1887)', file: 'Chapter7.md' },
+      { id: 'ch8', title: 'Chapter 8: Noli Me Tangere (1887)', file: 'Chapter8.md' },
+      { id: 'ch9', title: "Chapter 9: Grand Tour of Europe (1887)", file: 'Chapter9.md' },
+      { id: 'ch10', title: 'Chapter 10: First Homecoming (1887-88)', file: 'Chapter10.md' },
+      { id: 'ch11', title: 'Chapter 11: In Hong Kong and Macao (1888)', file: 'Chapter11.md' },
+      { id: 'ch12', title: 'Chapter 12: Romantic Interlude in Japan (1888)', file: 'Chapter12.md' },
+      { id: 'ch13', title: 'Chapter 13: Visit to the United States (1888)', file: 'Chapter13.md' },
+      { id: 'ch14', title: 'Chapter 14: Rizal in London (1888-89)', file: 'Chapter14.md' },
+      { id: 'ch15', title: 'Chapter 15: Second Sojourn in Paris (1889)', file: 'Chapter15.md' },
+      { id: 'ch16', title: 'Chapter 16: In Belgian Brussels (1890)', file: 'Chapter16.md' },
+      { id: 'ch17', title: 'Chapter 17: Misfortunes in Madrid (1890-91)', file: 'Chapter17.md' },
+      { id: 'ch18', title: 'Chapter 18: Biarritz & Nelly Boustead (1891)', file: 'Chapter18.md' },
+      { id: 'ch19', title: 'Chapter 19: El Filibusterismo (1891)', file: 'Chapter19.md' },
+      { id: 'ch20', title: 'Chapter 20: Ophthalmic Surgeon in Hong Kong', file: 'Chapter20.md' },
+      { id: 'ch21', title: 'Chapter 21: Second Homecoming & Liga Filipina', file: 'Chapter21.md' },
+      { id: 'ch22', title: 'Chapter 22: Exile in Dapitan (1892-96)', file: 'Chapter22.md' },
+      { id: 'ch23', title: 'Chapter 23: Last Trip Abroad (1896)', file: 'Chapter23.md' },
+      { id: 'ch24', title: 'Chapter 24: Last Homecoming and Trial', file: 'Chapter24.md' },
+      { id: 'ch25', title: 'Chapter 25: Martyrdom at Bagumbayan', file: 'Chapter25.md' },
+    ];
+
+    const BASE = 'https://raw.githubusercontent.com/cmingming8000-svg/Rizal-md-s/main/New/Rizal-md-s-rizal-book-corrections-245b1';
+
+    // Load all chapters
+    async function loadBook() {
+      const container = document.getElementById('bookContent');
+      container.innerHTML = '<p style="text-align:center;padding:40px;opacity:0.6;">Loading book content...</p>';
+      
+      let allHtml = '';
+      for (let i = 0; i < chapters.length; i++) {
+        try {
+          const resp = await fetch(BASE + '/' + chapters[i].file);
+          if (!resp.ok) throw new Error('Failed');
+          const md = await resp.text();
+          const html = mdToHtml(md);
+          allHtml += '<div class="chapter" id="' + chapters[i].id + '-section">';
+          allHtml += '<h1 class="chapter-heading" id="' + chapters[i].id + '">' + chapters[i].title + '</h1>';
+          allHtml += html;
+          allHtml += '</div>';
+        } catch(e) {
+          allHtml += '<div class="chapter"><h1 class="chapter-heading" id="' + chapters[i].id + '">' + chapters[i].title + '</h1><p>Failed to load this chapter. Please check your internet connection.</p></div>';
         }
-      })();
-    </script>
-      <script>
-      (function () {
-        if (window.self === window.top) return;
-        var reported = {};
-        window.addEventListener("error", function (event) {
-          // 资源加载失败的 error 事件没有 message，此处仅上报 JS 运行时错误
-          if (!event || !event.message) return;
-          var key =
-            event.message + "|" + (event.filename || "") + "|" + (event.lineno || 0);
-          if (reported[key]) return; // 相同错误只上报一次，避免渲染循环刷屏
-          reported[key] = true;
-          try {
-            window.parent.postMessage(
-              {
-                type: "sandbox-runtime-error",
-                payload: {
-                  message: String(event.message).slice(0, 500),
-                  filename: event.filename || "",
-                  lineno: event.lineno || 0,
-                  colno: event.colno || 0,
-                  stack:
-                    event.error && event.error.stack
-                      ? String(event.error.stack).slice(0, 2000)
-                      : ""
-                }
-              },
-              "*"
-            );
-          } catch (e) {
-            /* 上报失败不影响页面运行 */
+      }
+      container.innerHTML = allHtml;
+      buildTOC();
+      setupScrollSpy();
+    }
+
+    // Build TOC
+    function buildTOC() {
+      const headings = document.querySelectorAll('.chapter-heading');
+      const tocList = document.getElementById('tocList');
+      tocList.innerHTML = '';
+      headings.forEach((ch) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + ch.id;
+        a.textContent = ch.textContent;
+        a.onclick = () => { if(window.innerWidth < 1024) toggleSidebar(); };
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+    }
+    // Intersection observer for active TOC
+    function setupScrollSpy() {
+      const chapters = document.querySelectorAll('.chapter-heading');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            document.querySelectorAll('.toc-list a').forEach(l => l.classList.remove('active'));
+            const link = document.querySelector('.toc-list a[href="#' + entry.target.id + '"]');
+            if (link) link.classList.add('active');
           }
         });
-      })();
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+      }, { rootMargin: '-80px 0px -70% 0px' });
+      chapters.forEach(ch => observer.observe(ch));
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadBook);
+  </script>
+</body>
 </html>
