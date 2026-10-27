@@ -1,5 +1,142 @@
 <!DOCTYPE html>
-<html>
-<head><title>Building...</title></head>
-<body></body>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jose Rizal: Life, Works, and Writings of a Genius</title>
+<style>
+:root{--bg:#faf6ed;--text:#3d2b1f;--sidebar:#f5efe0;--border:#d4c5a0;--accent:#8b4513;--accent-bg:rgba(139,69,19,.08);--header-bg:rgba(245,239,224,.92)}
+[data-theme="light"]{--bg:#fff;--text:#2c2c2c;--sidebar:#f5f5f5;--border:#e0e0e0;--accent:#8b4513;--accent-bg:rgba(139,69,19,.08);--header-bg:rgba(245,245,245,.92)}
+[data-theme="dark"]{--bg:#1a1a2e;--text:#e0e0e0;--sidebar:#16213e;--border:#2a2a4a;--accent:#d4a574;--accent-bg:rgba(212,165,116,.1);--header-bg:rgba(22,33,62,.92)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--text);line-height:1.85;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased}
+.hdr{position:sticky;top:0;z-index:100;background:var(--header-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.menu{background:none;border:none;cursor:pointer;padding:8px;color:var(--text);font-size:20px;border-radius:6px;display:none}
+.hdr-t h1{font-size:15px;font-weight:700}
+.hdr-t p{font-size:11px;opacity:.6}
+.ctrls{display:flex;align-items:center;gap:8px}
+.fbtn{background:none;border:1px solid var(--border);padding:3px 8px;border-radius:4px;cursor:pointer;color:var(--text);font-size:12px;font-weight:700}
+.fsz{font-size:11px;opacity:.6;min-width:24px;text-align:center}
+.dots{display:flex;gap:4px;margin-left:8px}
+.dot{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);cursor:pointer;padding:0}
+.dot.on{border:2px solid var(--accent)}
+.d-l{background:#fff}.d-s{background:#faf6ed}.d-d{background:#1a1a2e}
+.wrap{display:flex}
+.side{position:fixed;top:53px;left:0;height:calc(100vh - 53px);width:300px;overflow-y:auto;z-index:90;background:var(--sidebar);border-right:1px solid var(--border);transform:translateX(-100%);transition:transform .3s;padding:20px}
+.side.open{transform:translateX(0)}
+.side h2{font-size:15px;font-weight:700;margin-bottom:16px;opacity:.8}
+.toc{list-style:none}
+.toc li{margin-bottom:2px}
+.toc a{display:block;padding:7px 12px;border-radius:6px;text-decoration:none;color:var(--text);font-size:13px;line-height:1.4;transition:all .2s;opacity:.7;border-left:3px solid transparent}
+.toc a:hover{background:var(--accent-bg);opacity:1}
+.toc a.on{background:var(--accent-bg);opacity:1;font-weight:600;border-left-color:var(--accent)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;display:none}
+.ov.show{display:block}
+.main{flex:1;max-width:780px;margin:0 auto;padding:40px 24px 100px;font-size:18px}
+.tp{text-align:center;padding:60px 0 80px;border-bottom:2px solid var(--accent);margin-bottom:60px}
+.tp .lb{font-size:13px;letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-bottom:20px}
+.tp h1{font-size:2.4em;font-weight:700;line-height:1.2;margin-bottom:16px}
+.tp .st{font-size:1.1em;font-style:italic;opacity:.8}
+.tp .ed{font-size:.85em;opacity:.5;margin-top:30px}
+.tp .au{font-size:.95em;opacity:.7;margin-top:8px}
+.ch{margin-bottom:80px}
+.ch-heading{font-size:1.8em;font-weight:700;line-height:1.2;margin-bottom:1.5em;padding-bottom:.4em;border-bottom:2px solid var(--accent);scroll-margin-top:70px}
+.cb h2{font-size:1.4em;font-weight:600;margin:2em 0 .6em;opacity:.9}
+.cb h3{font-size:1.15em;font-weight:600;margin:1.5em 0 .5em;opacity:.85}
+.cb h4{font-size:1.05em;font-weight:600;margin:1.2em 0 .4em;opacity:.8}
+.cb p{margin-bottom:1.2em;text-align:justify;hyphens:auto}
+.ch>.cb>p:first-of-type::first-letter{font-size:3.2em;float:left;line-height:.8;margin-right:.08em;margin-top:.07em;font-weight:700;color:var(--accent)}
+.cb blockquote{border-left:3px solid var(--accent);margin:1.5em 0;padding:.8em 1.2em;font-style:italic;opacity:.85;background:var(--accent-bg);border-radius:0 8px 8px 0}
+.cb blockquote p{text-align:left;margin-bottom:.5em}
+.cb blockquote p:last-child{margin-bottom:0}
+.cb ul,.cb ol{margin:1em 0;padding-left:1.5em}
+.cb li{margin-bottom:.5em;line-height:1.7}
+.cb strong{font-weight:700}
+.cb em{font-style:italic}
+.cb hr{border:none;height:1px;background:linear-gradient(to right,transparent,var(--text),transparent);opacity:.15;margin:3em 0}
+.ftr{border-top:1px solid var(--border);padding-top:30px;text-align:center;font-size:13px;opacity:.5}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px}
+::selection{background:rgba(139,69,19,.2)}
+@media(min-width:1024px){.side{transform:translateX(0);position:sticky;top:53px;height:calc(100vh - 53px)}}
+@media(max-width:640px){.ch-heading{font-size:1.4em}.cb h2{font-size:1.2em}.ch>.cb>p:first-of-type::first-letter{font-size:2.5em}.tp h1{font-size:1.8em}.hdr-t p{display:none}.menu{display:block}}
+@media print{.hdr,.side,.ov,.menu{display:none!important}.main{max-width:none;padding:20px}.ch{page-break-before:always}}
+</style>
+</head>
+<body data-theme="sepia">
+<header class="hdr">
+<div class="hdr-l">
+<button class="menu" onclick="document.getElementById('sb').classList.toggle('open');document.getElementById('ov').classList.toggle('show')" aria-label="Menu">&#9776;</button>
+<div class="hdr-t"><h1>Jose Rizal</h1><p>Life, Works, and Writings of a Genius</p></div>
+</div>
+<div class="ctrls">
+<button class="fbtn" onclick="fs(-2)">A-</button>
+<span class="fsz" id="fl">18</span>
+<button class="fbtn" onclick="fs(2)">A+</button>
+<div class="dots">
+<button class="dot d-l" onclick="st('light')" title="Light"></button>
+<button class="dot d-s on" onclick="st('sepia')" title="Sepia"></button>
+<button class="dot d-d" onclick="st('dark')" title="Dark"></button>
+</div>
+</div>
+</header>
+<div class="wrap">
+<aside class="side" id="sb">
+<h2>Table of Contents</h2>
+<ol class="toc"><li><a href="#prologue" data-target="prologue">Prologue: Rizal and His Times</a></li>
+<li><a href="#ch1" data-target="ch1">Chapter 1: Advent of A National Hero</a></li>
+<li><a href="#ch2" data-target="ch2">Chapter 2: Childhood Years in Calamba</a></li>
+<li><a href="#ch3" data-target="ch3">Chapter 3: Early Education in Calamba and Biñan</a></li>
+<li><a href="#ch4" data-target="ch4">Chapter 4: Scholastic Triumphs at Ateneo de Manila (1872-1877)</a></li>
+<li><a href="#ch5" data-target="ch5">Chapter 5: Medical Studies at UST (1877-1882)</a></li>
+<li><a href="#ch6" data-target="ch6">Chapter 6: In Sunny Spain (1882-1885)</a></li>
+<li><a href="#ch7" data-target="ch7">Chapter 7: Paris to Berlin (1885-1887)</a></li>
+<li><a href="#ch8" data-target="ch8">Chapter 8: Noli Me Tangere Published in Berlin (1887)</a></li>
+<li><a href="#ch9" data-target="ch9">Chapter 9: Rizal's Grand Tour of Europe with Viola (1887)</a></li>
+<li><a href="#ch10" data-target="ch10">Chapter 10: First Homecoming, 1887-88</a></li>
+<li><a href="#ch11" data-target="ch11">Chapter 11: In Hong Kong and Macao, 1888</a></li>
+<li><a href="#ch12" data-target="ch12">Chapter 12: Romantic Interlude in Japan (1888)</a></li>
+<li><a href="#ch13" data-target="ch13">Chapter 13: Rizal's Visit to the United States (1888)</a></li>
+<li><a href="#ch14" data-target="ch14">Chapter 14: Rizal in London (1888-89)</a></li>
+<li><a href="#ch15" data-target="ch15">Chapter 15: Second Sojourn in Paris and Universal Exposition of 1889</a></li>
+<li><a href="#ch16" data-target="ch16">Chapter 16: In Belgian Brussels (1890)</a></li>
+<li><a href="#ch17" data-target="ch17">Chapter 17: Misfortunes in Madrid (1890-91)</a></li>
+<li><a href="#ch18" data-target="ch18">Chapter 18: Biarritz Vacation and Romance with Nelly Boustead (1891)</a></li>
+<li><a href="#ch19" data-target="ch19">Chapter 19: El Filibusterismo Published in Ghent (1891)</a></li>
+<li><a href="#ch20" data-target="ch20">Chapter 20: Ophthalmic Surgeon in Hong Kong (1891-92)</a></li>
+<li><a href="#ch21" data-target="ch21">Chapter 21: Second Homecoming and The Liga Filipina</a></li>
+<li><a href="#ch22" data-target="ch22">Chapter 22: Exile in Dapitan, 1892-96</a></li>
+<li><a href="#ch23" data-target="ch23">Chapter 23: Last Trip Abroad, (1896)</a></li>
+<li><a href="#ch24" data-target="ch24">Chapter 24: Last Homecoming and Trial</a></li>
+<li><a href="#ch25" data-target="ch25">Chapter 25: Martyrdom at Bagumbayan</a></li></ol>
+</aside>
+<div class="ov" id="ov" onclick="document.getElementById('sb').classList.remove('open');this.classList.remove('show')"></div>
+<main class="main" id="mc">
+<div class="tp">
+<p class="lb">A Digital Edition</p>
+<h1>Jose Rizal</h1>
+<p class="st">Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero</p>
+<p class="ed">Second Edition</p>
+<p class="au">by Gregorio F. Zaide &amp; Sonia M. Zaide</p>
+</div>
+<p><strong>Download the complete book from:</strong> <code>dist/index.html</code></p>
+<p>This file contains all 26 chapters (521 KB) with embedded CSS and JavaScript.</p>
+<footer class="ftr">
+<p>Based on "Jose Rizal: Life, Works, and Writings of a Genius, Writer, Scientist, and National Hero"</p>
+<p>2nd Edition by Gregorio F. Zaide and Sonia M. Zaide</p>
+</footer>
+</main>
+</div>
+<script>
+function st(t){document.body.setAttribute('data-theme',t);document.querySelectorAll('.dot').forEach(function(d){d.classList.remove('on')});var m={light:'d-l',sepia:'d-s',dark:'d-d'};document.querySelector('.'+m[t]).classList.add('on')}
+var fz=18;function fs(d){fz=Math.max(14,Math.min(26,fz+d));document.getElementById('mc').style.fontSize=fz+'px';document.getElementById('fl').textContent=fz}
+document.querySelectorAll('.toc a').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var el=document.getElementById(this.getAttribute('data-target'));if(el)el.scrollIntoView({behavior:'smooth',block:'start'});if(window.innerWidth<1024){document.getElementById('sb').classList.remove('open');document.getElementById('ov').classList.remove('show')}})});
+var hs=document.querySelectorAll('.ch-heading'),ls=document.querySelectorAll('.toc a');
+var ob=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){ls.forEach(function(l){l.classList.remove('on')});var lk=document.querySelector('.toc a[data-target="'+e.target.id+'"]');if(lk)lk.classList.add('on')}})},{rootMargin:'-70px 0px -70% 0px'});
+hs.forEach(function(h){ob.observe(h)});
+</script>
+</body>
 </html>
