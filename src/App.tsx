@@ -46,7 +46,7 @@ function App() {
   };
 
   return (
-    <div style={{ background: t.bg, color: t.text, minHeight: '100vh', fontFamily: "'Lora', 'Crimson Text', Georgia, serif", transition: 'background 0.3s, color 0.3s' }}>
+    <div style={{ background: t.bg, color: t.text, minHeight: '100vh', fontFamily: "Georgia, 'Times New Roman', serif", transition: 'background 0.3s, color 0.3s' }}>
       {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 100,
@@ -62,7 +62,7 @@ function App() {
             aria-label="Toggle menu"
           >☰</button>
           <div>
-            <h1 style={{ margin: 0, fontSize: '15px', fontWeight: 700, fontFamily: "'Lora', serif" }}>Jose Rizal</h1>
+            <h1 style={{ margin: 0, fontSize: '15px', fontWeight: 700, fontFamily: "Georgia, serif" }}>Jose Rizal</h1>
             <p style={{ margin: 0, fontSize: '11px', opacity: 0.6 }}>Life, Works, and Writings of a Genius</p>
           </div>
         </div>
@@ -108,7 +108,7 @@ function App() {
                     cursor: 'pointer', transition: 'all 0.2s',
                     opacity: activeChapter === ch.id ? 1 : 0.7,
                     fontWeight: activeChapter === ch.id ? 600 : 400,
-                    fontFamily: "'Lora', serif",
+                    fontFamily: "Georgia, serif",
                   }}
                   onMouseEnter={(e) => { if (activeChapter !== ch.id) (e.target as HTMLElement).style.opacity = '1'; }}
                   onMouseLeave={(e) => { if (activeChapter !== ch.id) (e.target as HTMLElement).style.opacity = '0.7'; }}
@@ -130,7 +130,7 @@ function App() {
           {/* Title Page */}
           <div style={{ textAlign: 'center', padding: '60px 0 80px', borderBottom: `2px solid ${t.accent}`, marginBottom: '60px' }}>
             <p style={{ fontSize: '13px', letterSpacing: '3px', textTransform: 'uppercase', opacity: 0.5, marginBottom: '20px' }}>A Digital Edition</p>
-            <h1 style={{ fontSize: '2.4em', fontWeight: 700, lineHeight: 1.2, marginBottom: '16px', fontFamily: "'Lora', serif" }}>Jose Rizal</h1>
+            <h1 style={{ fontSize: '2.4em', fontWeight: 700, lineHeight: 1.2, marginBottom: '16px', fontFamily: "Georgia, serif" }}>Jose Rizal</h1>
             <p style={{ fontSize: '1.1em', fontStyle: 'italic', opacity: 0.8, marginBottom: '8px' }}>Life, Works, and Writings of a Genius,<br />Writer, Scientist, and National Hero</p>
             <p style={{ fontSize: '0.85em', opacity: 0.5, marginTop: '30px' }}>Second Edition</p>
             <p style={{ fontSize: '0.95em', opacity: 0.7, marginTop: '8px' }}>by Gregorio F. Zaide &amp; Sonia M. Zaide</p>
@@ -153,7 +153,7 @@ function App() {
               </h1>
               <div
                 className="chapter-body"
-                style={{ fontFamily: "'Lora', serif" }}
+                style={{ fontFamily: "Georgia, serif" }}
                 dangerouslySetInnerHTML={{ __html: ch.html }}
               />
             </div>
