@@ -2,31 +2,43 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Jose Rizal: Life, Works, and Writings of a Genius</title>
 <style>
 :root{--bg:#f5f1e8;--text:#2c2416;--paper:#faf8f3;--accent:#6b4423;--accent-light:#8b6234;--border:#d4c5a0;--shadow:rgba(44,36,22,.15)}
 [data-theme="light"]{--bg:#ffffff;--text:#1a1a1a;--paper:#ffffff;--accent:#4a4a4a;--accent-light:#666666;--border:#e0e0e0;--shadow:rgba(0,0,0,.1)}
 [data-theme="dark"]{--bg:#1a1a1a;--text:#e8e8e8;--paper:#2a2a2a;--accent:#c9a882;--accent-light:#d4b896;--border:#3a3a3a;--shadow:rgba(0,0,0,.5)}
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:80px}
+html,body{height:100%;overflow:hidden}
 body{
   font-family:'Palatino Linotype','Book Antiqua',Palatino,'Times New Roman',serif;
   background:var(--bg);
   color:var(--text);
-  line-height:1.8;
   transition:background .4s,color .4s;
   -webkit-font-smoothing:antialiased;
   font-size:17px;
+  display:flex;
+  flex-direction:column;
 }
 .book-container{
+  flex:1;
   max-width:900px;
+  width:100%;
   margin:0 auto;
   background:var(--paper);
-  min-height:100vh;
   box-shadow:0 0 60px var(--shadow);
   position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
 }
+.page{
+  flex:1;
+  padding:60px 80px;
+  overflow-y:auto;
+  display:none;
+}
+.page.active{display:block}
 .controls{
   position:fixed;
   top:20px;
@@ -59,11 +71,52 @@ body{
 }
 .theme-dot:hover{transform:scale(1.1)}
 .theme-dot.active{border:3px solid var(--accent);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--accent)}
-.book-cover{
-  padding:80px 60px;
+.nav-controls{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:15px;
+  align-items:center;
+  background:var(--paper);
+  padding:12px 20px;
+  border-radius:30px;
+  box-shadow:0 4px 20px var(--shadow);
+  border:1px solid var(--border);
+  z-index:1000;
+}
+.nav-btn{
+  background:none;
+  border:2px solid var(--accent);
+  width:40px;height:40px;
+  border-radius:50%;
+  cursor:pointer;
+  color:var(--accent);
+  font-size:18px;
+  font-weight:700;
+  transition:all .2s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.nav-btn:hover{background:var(--accent);color:var(--paper)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.page-indicator{
+  font-size:14px;
+  color:var(--text);
+  min-width:80px;
   text-align:center;
-  border-bottom:3px double var(--accent);
+  font-weight:600;
+}
+.book-cover{
+  text-align:center;
   position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  height:100%;
 }
 .book-cover::before{
   content:'';
@@ -110,8 +163,10 @@ body{
   color:var(--accent);
 }
 .toc-page{
-  padding:60px;
-  border-bottom:1px solid var(--border);
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 .toc-title{
   font-size:2em;
@@ -139,20 +194,13 @@ body{
   align-items:baseline;
   transition:color .2s;
   font-size:1.05em;
+  cursor:pointer;
 }
 .toc-item a:hover{color:var(--accent)}
-.toc-item .chapter-num{
-  font-weight:600;
-  margin-right:10px;
-  color:var(--accent);
-}
 .chapter{
-  padding:80px 60px;
-  page-break-before:always;
-  position:relative;
-}
-.chapter:not(:last-child){
-  border-bottom:1px solid var(--border);
+  height:100%;
+  display:flex;
+  flex-direction:column;
 }
 .chapter-title{
   font-size:2.2em;
@@ -163,7 +211,6 @@ body{
   line-height:1.3;
   font-variant:small-caps;
   letter-spacing:.05em;
-  scroll-margin-top:80px;
 }
 .chapter-title::after{
   content:'❦';
@@ -177,6 +224,8 @@ body{
   hyphens:auto;
   line-height:1.9;
   font-size:1.05em;
+  flex:1;
+  overflow-y:auto;
 }
 .chapter-content p{
   margin-bottom:1.4em;
@@ -260,34 +309,35 @@ body{
   margin:3em 0;
   opacity:.3;
 }
-.page-break{
-  text-align:center;
-  margin:60px 0;
-  font-size:1.5em;
-  opacity:.3;
-  color:var(--accent);
-}
 .colophon{
-  padding:60px;
   text-align:center;
-  border-top:3px double var(--accent);
   font-size:.9em;
   opacity:.6;
   line-height:1.8;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  height:100%;
 }
 @media(max-width:768px){
   .book-container{box-shadow:none}
-  .book-cover,.toc-page,.chapter{padding:40px 30px}
+  .page{padding:30px 20px}
   .book-title{font-size:2em}
-  .chapter-title{font-size:1.6em}
-  .controls{top:10px;right:10px;padding:8px 12px}
+  .chapter-title{font-size:1.6em;margin-bottom:30px}
+  .controls{top:10px;right:10px;padding:8px 12px;gap:6px}
   .ctrl-btn{padding:5px 10px;font-size:12px}
   .theme-dot{width:20px;height:20px}
+  .nav-controls{bottom:10px;padding:10px 15px;gap:10px}
+  .nav-btn{width:36px;height:36px;font-size:16px}
+  .page-indicator{font-size:12px;min-width:60px}
+  .book-cover::before{top:20px;left:20px;right:20px;bottom:20px}
+  .chapter-content{font-size:1em;line-height:1.8}
 }
 @media print{
-  .controls{display:none}
+  .controls,.nav-controls{display:none}
   .book-container{box-shadow:none;max-width:100%}
-  .chapter{page-break-before:always}
+  .page{display:block!important;page-break-after:always}
 }
 .ch>.cb>p:first-of-type::first-letter{font-size:3.2em;float:left;line-height:.8;margin-right:.08em;margin-top:.07em;font-weight:700;color:var(--accent)}
 .cb blockquote{border-left:3px solid var(--accent);margin:1.5em 0;padding:.8em 1.2em;font-style:italic;opacity:.85;background:var(--accent-bg);border-radius:0 8px 8px 0}
@@ -318,6 +368,7 @@ body{
 <button class="theme-dot" style="background:#1a1a1a" onclick="st('dark')" title="Dark"></button>
 </div>
 <div class="book-container" id="mc">
+<div class="page active" data-page="0">
 <div class="book-cover">
 <div class="book-title">Jose Rizal</div>
 <div class="book-subtitle">Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero</div>
@@ -325,36 +376,39 @@ body{
 <div class="book-author">Gregorio F. Zaide &amp; Sonia M. Zaide</div>
 <div class="book-edition">Second Edition</div>
 </div>
+</div>
+<div class="page" data-page="1">
 <div class="toc-page">
 <div class="toc-title">Contents</div>
-<ol class="toc-list"><li class="toc-item"><a href="#prologue">Prologue: Rizal and His Times</a></li>
-<li class="toc-item"><a href="#ch1">Chapter 1: Advent of A National Hero</a></li>
-<li class="toc-item"><a href="#ch2">Chapter 2: Childhood Years in Calamba</a></li>
-<li class="toc-item"><a href="#ch3">Chapter 3: Early Education in Calamba and Biñan</a></li>
-<li class="toc-item"><a href="#ch4">Chapter 4: Scholastic Triumphs at Ateneo de Manila (1872-1877)</a></li>
-<li class="toc-item"><a href="#ch5">Chapter 5: Medical Studies at UST (1877-1882)</a></li>
-<li class="toc-item"><a href="#ch6">Chapter 6: In Sunny Spain (1882-1885)</a></li>
-<li class="toc-item"><a href="#ch7">Chapter 7: Paris to Berlin (1885-1887)</a></li>
-<li class="toc-item"><a href="#ch8">Chapter 8: Noli Me Tangere Published in Berlin (1887)</a></li>
-<li class="toc-item"><a href="#ch9">Chapter 9: Rizal's Grand Tour of Europe with Viola (1887)</a></li>
-<li class="toc-item"><a href="#ch10">Chapter 10: First Homecoming, 1887-88</a></li>
-<li class="toc-item"><a href="#ch11">Chapter 11: In Hong Kong and Macao, 1888</a></li>
-<li class="toc-item"><a href="#ch12">Chapter 12: Romantic Interlude in Japan (1888)</a></li>
-<li class="toc-item"><a href="#ch13">Chapter 13: Rizal's Visit to the United States (1888)</a></li>
-<li class="toc-item"><a href="#ch14">Chapter 14: Rizal in London (1888-89)</a></li>
-<li class="toc-item"><a href="#ch15">Chapter 15: Second Sojourn in Paris and Universal Exposition of 1889</a></li>
-<li class="toc-item"><a href="#ch16">Chapter 16: In Belgian Brussels (1890)</a></li>
-<li class="toc-item"><a href="#ch17">Chapter 17: Misfortunes in Madrid (1890-91)</a></li>
-<li class="toc-item"><a href="#ch18">Chapter 18: Biarritz Vacation and Romance with Nelly Boustead (1891)</a></li>
-<li class="toc-item"><a href="#ch19">Chapter 19: El Filibusterismo Published in Ghent (1891)</a></li>
-<li class="toc-item"><a href="#ch20">Chapter 20: Ophthalmic Surgeon in Hong Kong (1891-92)</a></li>
-<li class="toc-item"><a href="#ch21">Chapter 21: Second Homecoming and The Liga Filipina</a></li>
-<li class="toc-item"><a href="#ch22">Chapter 22: Exile in Dapitan, 1892-96</a></li>
-<li class="toc-item"><a href="#ch23">Chapter 23: Last Trip Abroad, (1896)</a></li>
-<li class="toc-item"><a href="#ch24">Chapter 24: Last Homecoming and Trial</a></li>
-<li class="toc-item"><a href="#ch25">Chapter 25: Martyrdom at Bagumbayan</a></li></ol>
+<ol class="toc-list"><li class="toc-item"><a data-chapter="prologue">Prologue: Rizal and His Times</a></li>
+<li class="toc-item"><a data-chapter="ch1">Chapter 1: Advent of A National Hero</a></li>
+<li class="toc-item"><a data-chapter="ch2">Chapter 2: Childhood Years in Calamba</a></li>
+<li class="toc-item"><a data-chapter="ch3">Chapter 3: Early Education in Calamba and Biñan</a></li>
+<li class="toc-item"><a data-chapter="ch4">Chapter 4: Scholastic Triumphs at Ateneo de Manila (1872-1877)</a></li>
+<li class="toc-item"><a data-chapter="ch5">Chapter 5: Medical Studies at UST (1877-1882)</a></li>
+<li class="toc-item"><a data-chapter="ch6">Chapter 6: In Sunny Spain (1882-1885)</a></li>
+<li class="toc-item"><a data-chapter="ch7">Chapter 7: Paris to Berlin (1885-1887)</a></li>
+<li class="toc-item"><a data-chapter="ch8">Chapter 8: Noli Me Tangere Published in Berlin (1887)</a></li>
+<li class="toc-item"><a data-chapter="ch9">Chapter 9: Rizal's Grand Tour of Europe with Viola (1887)</a></li>
+<li class="toc-item"><a data-chapter="ch10">Chapter 10: First Homecoming, 1887-88</a></li>
+<li class="toc-item"><a data-chapter="ch11">Chapter 11: In Hong Kong and Macao, 1888</a></li>
+<li class="toc-item"><a data-chapter="ch12">Chapter 12: Romantic Interlude in Japan (1888)</a></li>
+<li class="toc-item"><a data-chapter="ch13">Chapter 13: Rizal's Visit to the United States (1888)</a></li>
+<li class="toc-item"><a data-chapter="ch14">Chapter 14: Rizal in London (1888-89)</a></li>
+<li class="toc-item"><a data-chapter="ch15">Chapter 15: Second Sojourn in Paris and Universal Exposition of 1889</a></li>
+<li class="toc-item"><a data-chapter="ch16">Chapter 16: In Belgian Brussels (1890)</a></li>
+<li class="toc-item"><a data-chapter="ch17">Chapter 17: Misfortunes in Madrid (1890-91)</a></li>
+<li class="toc-item"><a data-chapter="ch18">Chapter 18: Biarritz Vacation and Romance with Nelly Boustead (1891)</a></li>
+<li class="toc-item"><a data-chapter="ch19">Chapter 19: El Filibusterismo Published in Ghent (1891)</a></li>
+<li class="toc-item"><a data-chapter="ch20">Chapter 20: Ophthalmic Surgeon in Hong Kong (1891-92)</a></li>
+<li class="toc-item"><a data-chapter="ch21">Chapter 21: Second Homecoming and The Liga Filipina</a></li>
+<li class="toc-item"><a data-chapter="ch22">Chapter 22: Exile in Dapitan, 1892-96</a></li>
+<li class="toc-item"><a data-chapter="ch23">Chapter 23: Last Trip Abroad, (1896)</a></li>
+<li class="toc-item"><a data-chapter="ch24">Chapter 24: Last Homecoming and Trial</a></li>
+<li class="toc-item"><a data-chapter="ch25">Chapter 25: Martyrdom at Bagumbayan</a></li></ol>
 </div>
-<div class="chapter"><h1 class="chapter-title" id="prologue">Prologue: Rizal and His Times</h1><div class="chapter-content"><h1>PROLOGUE: Rizal and His Times</h1>
+</div>
+<div class="page" data-page="2"><div class="chapter"><h1 class="chapter-title" id="prologue">Prologue: Rizal and His Times</h1><div class="chapter-content"><h1>PROLOGUE: Rizal and His Times</h1>
 <p>To appreciate and understand the life of Dr. Jose Rizal, it is necessary to know the historical background of the world and of the Philippines during his times. The 19th century when he lived was a century of ferment caused by the blowing winds of history. In Asia, Europe, and the Americas, events surged irresistibly like sea tides, significantly affecting the lives and fortunes of mankind.</p>
 <h2>The World of Rizal's Times</h2>
 <p>On February 19, 1861, four months before Rizal's birth in Calamba, the liberal Czar Alexander II (1855-1881), to appease the rising discontent of the Russian masses, issued a proclamation emancipating 23,000,000 serfs. When Rizal was born on June 19, 1861, the American Civil War (1861-65) was raging furiously in the United States over the issue of Negro slavery. This titanic conflict, which erupted on April 12, 1861, compelled President Lincoln to issue his famous Emancipation Proclamation on September 22, 1862, freeing the Negro slaves.</p>
@@ -392,8 +446,8 @@ Forced labor, known as the <em>polo</em>, was the compulsory labor imposed by th
 <h3>Haciendas Owned by the Friars</h3>
 During Rizal's times the Spanish friars belonging to different religious orders were the richest landlords, for they owned the best haciendas (agricultural lands) in the Philippines. The rural folks, who had been living in these haciendas and cultivating them generation after generation, became tenants. Naturally, they resented the loss of their lands which belonged to their ancestors since pre-Spanish times. Rizal, whose family and relatives were tenants of the Dominican Estate of Calamba, tried to initiate agrarian reforms in 1887, but in vain.
 <h3>The Guardia Civil</h3>
-The last hated symbol of Spanish tyranny was the Guardia Civil (Constabulary). While it is true that the Guardia Civil in the Philippines had rendered meritorious services in suppressing the bandits in the provinces, they later became infamous for their rampant abuses, such as maltreating innocent people, looting their carabaos, chickens, and valuable belongings, and raping helpless women. It was natural that Rizal directed his stinging satire against the hated Guardia Civil. Through Elias in <em>Noli Me Tangere</em>, he exposed the Guardia Civil as a bunch of ruthless ruffians good only for "disturbing the peace" and "persecuting honest men."</div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch1">Chapter 1: Advent of A National Hero</h1><div class="chapter-content"><h1>Chapter 1: Advent of A National Hero</h1>
+The last hated symbol of Spanish tyranny was the Guardia Civil (Constabulary). While it is true that the Guardia Civil in the Philippines had rendered meritorious services in suppressing the bandits in the provinces, they later became infamous for their rampant abuses, such as maltreating innocent people, looting their carabaos, chickens, and valuable belongings, and raping helpless women. It was natural that Rizal directed his stinging satire against the hated Guardia Civil. Through Elias in <em>Noli Me Tangere</em>, he exposed the Guardia Civil as a bunch of ruthless ruffians good only for "disturbing the peace" and "persecuting honest men."</div></div></div>
+<div class="page" data-page="3"><div class="chapter"><h1 class="chapter-title" id="ch1">Chapter 1: Advent of A National Hero</h1><div class="chapter-content"><h1>Chapter 1: Advent of A National Hero</h1>
 <p>Dr. Jose Rizal is a unique example of a genius who came to the world endowed with versatile gifts. He truly ranked with the world's geniuses. He was a physician, ophthalmic surgeon, poet, dramatist, essayist, novelist, historian, architect, painter, sculptor, educator, surveyor, engineer, linguist, musician, naturalist, ethnologist, herpetologist, cartographer, farmer, businessman, economist, philosopher, translator, inventor, magician, humorist, satirist, polemicist, sportsman, traveler, and prophet. Above and beyond all these, he was a hero and a patriot who consecrated his life for the redemption of his oppressed people. No wonder, he is now acclaimed as the national hero of the Philippines.</p>
 <h2>The Birth of a Hero</h2>
 Jose Rizal was born on the moonlit night of Wednesday, June 19, 1861, in the lakeshore town of Calamba, Laguna Province. His mother almost died during the delivery because of his big head. As he recounted many years later in his student memoirs:
@@ -418,8 +472,8 @@ The real surname of the Rizal family (the paternal side) was <strong>Mercado</st
 The Rizal family belonged to the <em>principalia</em>, a town aristocracy in Spanish Philippines. It was one of the distinguished families in Calamba. By dint of honest and hard work and frugal living, Rizal's parents were able to live well. From the farms, which were rented from the Dominican Order, they harvested rice, corn, and sugarcane. They raised pigs, chickens, and turkeys in their backyard. In addition to farming and stockraising, Doña Teodora managed a general goods store and operated a small flour-mill and a home-made ham press.
 <h2>The Life of the Rizals</h2>
 The Rizal family had a simple, contented, and happy life. In consonance with Filipino custom, family ties among the Rizals were intimately close. Don Francisco and Doña Teodora loved their children, but they never spoiled them. They were strict parents and they trained their children to love God, to behave well, to be obedient, and to respect people, especially the old folks. Whenever the children, including Jose Rizal, got into mischief, they were given a sound spanking. Evidently, they believed in the maxim: "Spare the rod and spoil the child."
-<p>Every day the Rizals (parents and children) heard Mass in the church, particularly during Sundays and Christian holidays. They prayed together daily at sunset and the Rosary before retiring. After the family prayers, all the children kissed the hands of their parents.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch2">Chapter 2: Childhood Years in Calamba</h1><div class="chapter-content"><h1>Chapter 2: Childhood Years in Calamba</h1>
+<p>Every day the Rizals (parents and children) heard Mass in the church, particularly during Sundays and Christian holidays. They prayed together daily at sunset and the Rosary before retiring. After the family prayers, all the children kissed the hands of their parents.</p></div></div></div>
+<div class="page" data-page="4"><div class="chapter"><h1 class="chapter-title" id="ch2">Chapter 2: Childhood Years in Calamba</h1><div class="chapter-content"><h1>Chapter 2: Childhood Years in Calamba</h1>
 <p>Jose Rizal had many beautiful memories of childhood in his native town. He grew up in a happy home, ruled by good parents, bubbling with joy, and sanctified by God's blessings. His quiet town of Calamba, so named after a big native jar, <em>kalanba</em>, furnished the ideal setting for a hero. Its scenic beauties and its industrious, hospitable, and friendly folks impressed him during his childhood years and profoundly affected his mind and character. The happiest period of Rizal's life was spent in this lakeshore town, a worthy prelude to his Hamlet-like tragic manhood.</p>
 <h2>Calamba, the Hero's Town</h2>
 Calamba was an hacienda town which belonged to the Dominican Order, which also owned all the lands around it. It is a picturesque town nestling on a verdant plain covered with irrigated ricefields and sugar-lands. A few kilometers to the south looms the legendary Mount Makiling in somnolent grandeur, and beyond this mountain is the province of Batangas.
@@ -478,8 +532,8 @@ On the night Jose Rizal was born, other children were born in Calamba and hundre
 <p>Father Leoncio Lopez, the wise and learned parish priest of Calamba, fostered Rizal's love for scholarship and intellectual honesty.</p>
 <p>The sorrows in his family, such as the death of Concha in 1865 and the imprisonment of his mother in 1871-74, contributed to strengthen his character, enabling him to face adversities in later years. The Spanish abuses and injustices he witnessed in boyhood, such as the brutal acts of the Guardia Civil inflicted on innocent Filipinos, and the execution of Fathers Gomez, Burgos, and Zamora in 1872, awakened his nationalistic spirit and inspired him to consecrate his life and talents for the redemption of his oppressed people.</p>
 <p><strong>3. Aid of Divine Providence:</strong> Greater than heredity and environment in the life of a man is the aid of Divine Providence. A man may have everything in life—brains, wealth, and power—but without the aid of Divine Providence, he cannot achieve greatness in the sight of God.</p>
-<p>Rizal was providentially destined to be the pride and glory of his nation. God endowed him with the versatile gifts of a genius, the vibrant spirit of a patriot, and the valiant heart to sacrifice for a noble cause.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch3">Chapter 3: Early Education in Calamba and Biñan</h1><div class="chapter-content"><h1>Chapter 3: Early Education in Calamba and Biñan</h1>
+<p>Rizal was providentially destined to be the pride and glory of his nation. God endowed him with the versatile gifts of a genius, the vibrant spirit of a patriot, and the valiant heart to sacrifice for a noble cause.</p></div></div></div>
+<div class="page" data-page="5"><div class="chapter"><h1 class="chapter-title" id="ch3">Chapter 3: Early Education in Calamba and Biñan</h1><div class="chapter-content"><h1>Chapter 3: Early Education in Calamba and Biñan</h1>
 <p>Rizal had his early education in Calamba and Biñan. It was typical schooling that a son of an <em>ilustrado</em> family received during his time, characterized by the four R's—reading, writing, arithmetic, and religion. Instruction was rigid and strict. Knowledge was forced into the minds of the pupils by means of the tedious memory method aided by the teacher's whip. Despite the defects of the Spanish system of elementary education, Rizal was able to acquire the necessary instruction preparatory for college work in Manila and abroad. It may be said that Rizal, who was born a physical weakling, rose to become an intellectual giant not because of, but rather in spite of, the outmoded and backward system of instruction obtaining in the Philippines during the last decades of Spanish rule.</p>
 <h2>The Hero's First Teacher</h2>
 The first teacher of Rizal was his mother, who was a remarkable woman of good character and fine culture. On her lap, he learned at the age of three the alphabet and the prayers. "My mother," wrote Rizal in his student memoirs, "taught me how to read and to say haltingly the humble prayers which I raised fervently to God."
@@ -523,8 +577,8 @@ And later, in 1891, he dedicated his second novel, <em>El Filibusterismo</em>, t
 Before June of 1872, tragedy struck the Rizal family. Doña Teodora was suddenly arrested on a malicious charge that she and her brother, Jose Alberto, tried to poison the latter's perfidious wife. Jose Alberto, a rich Biñan <em>ilustrado</em>, had just returned from a business trip in Europe. During his absence his wife abandoned their home and children. When he arrived in Biñan, he found her living with another man. Infuriated by her infidelity, he planned to divorce her.
 <p>Doña Teodora, to avert family scandal, persuaded him to forgive his wife. The family trouble was amicably settled, and Jose Alberto lived again with his wife. However, the evil wife, with the connivance of the Spanish lieutenant of the Guardia Civil, filed a case in court accusing her husband and Doña Teodora of attempting to poison her. This lieutenant happened to have an ax to grind against the Rizal family, because at one time Don Francisco (Rizal's father) refused to give him fodder for his horse. Taking the opportunity to avenge himself, he arrested Doña Teodora, with the help of Calamba's <em>gobernadorcillo</em>, Antonio Vivencio del Rosario, a menial of the friars. These two ungrateful men had been frequent guests at the Rizal home.</p>
 <p>After arresting Doña Teodora, the sadistic Spanish lieutenant forced her to walk from Calamba to Santa Cruz (capital of Laguna Province), a distance of 50 kilometers. Upon arrival in Santa Cruz, she was incarcerated at the provincial prison, where she languished for two years and a half until the Manila Royal Audiencia (Supreme Court) acquitted her of the alleged crime.</p>
-<p>Rizal, recounting this incidence of his mother's imprisonment, said in his student memoirs: "Our mother was unjustly snatched away from us and by whom? By some men who had been our friends and whom we treated as honored guests. We learned later that our mother got sick far from us and at an advanced age. My mother was defended by Messrs. Francisco de Marcaida and Manuel Marzan, the most famous lawyers of Manila. She finally succeeded to be acquitted and vindicated in the eyes of her judges, accusers, and even her enemies, but after how long? After two and a half years."</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch4">Chapter 4: Scholastic Triumphs at Ateneo de Manila (1872-1877)</h1><div class="chapter-content"><h1>Chapter 4: Scholastic Triumphs at Ateneo de Manila (1872-1877)</h1>
+<p>Rizal, recounting this incidence of his mother's imprisonment, said in his student memoirs: "Our mother was unjustly snatched away from us and by whom? By some men who had been our friends and whom we treated as honored guests. We learned later that our mother got sick far from us and at an advanced age. My mother was defended by Messrs. Francisco de Marcaida and Manuel Marzan, the most famous lawyers of Manila. She finally succeeded to be acquitted and vindicated in the eyes of her judges, accusers, and even her enemies, but after how long? After two and a half years."</p></div></div></div>
+<div class="page" data-page="6"><div class="chapter"><h1 class="chapter-title" id="ch4">Chapter 4: Scholastic Triumphs at Ateneo de Manila (1872-1877)</h1><div class="chapter-content"><h1>Chapter 4: Scholastic Triumphs at Ateneo de Manila (1872-1877)</h1>
 <p>Four months after the martyrdom of Gom-Bur-Za and with Doña Teodora still in prison, Jose, who had not yet celebrated his eleventh birthday, was sent to Manila. He studied in the Ateneo Municipal, a college under the supervision of the Spanish Jesuits. This college was a bitter rival of the Dominican-owned College of San Juan de Letran. It was formerly the <em>Escuela Pia</em> (Charity School), a school for poor boys in Manila, which was established by the city government in 1817. When the Jesuits, who had been expelled from the Philippines in 1768, returned to Manila in 1859, they were given the management of the <em>Escuela Pia</em>, whose name was changed to <em>Ateneo Municipal</em>, and later became the Ateneo de Manila. They were splendid educators, so that Ateneo acquired prestige as an excellent college for boys.</p>
 <h2>Rizal Enters the Ateneo</h2>
 On June 10, 1872, Jose, accompanied by Paciano, went to Manila. He took the entrance examination on Christian doctrine, arithmetic, and reading at the College of San Juan de Letran, and passed them. He returned to Calamba to stay a few days with his family and to attend the town fiesta. His father, who first wished him to study at Letran, changed his mind and decided to send him to Ateneo instead.
@@ -597,8 +651,8 @@ It was Doña Teodora who first discovered the poetic genius of her son, and it w
 <p>But Rizal failed to come up to her expectation. He could only mumble: "Well, good-bye. Anyway—I'll see you when you pass Calamba on your way to Lipa." The next day Rizal passed by steamer in his hometown. His mother did not recognize him at first, due to her failing eyesight. He was saddened to learn of his mother's growing blindness. His sisters gaily welcomed him, telling him about Segunda, for they knew of his romance through Olimpia.</p>
 <p>That night he demonstrated his skill in fencing to his family. He had a friendly fencing bout with the best fencer in Calamba and bested him.</p>
 <p>The following day (Saturday) he learned that the steamer carrying Segunda and her family would not anchor at Calamba because of the strong winds; it would stop in Biñan. He saddled his white horse and waited at the road. A cavalcade of <em>calesas</em> from Biñan passed by. In one of whom—Segunda, smiling and waving her handkerchief at him. He doffed his hat and was compelled to say anything. Her carriage rolled on and vanished in the distance like a "swift shadow." He returned home, dazed and desolate, with his first romance "ruined by his own shyness and reserve." The first girl whom he loved with ardent fervor, was lost to him forever. She returned to Lipa and later married Manuel Luz. He remained in Calamba, a frustrated lover, cherishing nostalgic memories of a lost love.</p>
-<p>Three years later, Rizal, recording his first and only romance, said: "Ended, at an early hour, my first love. My heart will always mourn the reckless step it took on the virgin edge of a flower-decked abyss. My illusions will return, yes, but uncertain, ready for the first betrayal on the path of love."</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch5">Chapter 5: Medical Studies at UST (1877-1882)</h1><div class="chapter-content"><h1>Chapter 5: Medical Studies at the University of Santo Tomas (1877-1882)</h1>
+<p>Three years later, Rizal, recording his first and only romance, said: "Ended, at an early hour, my first love. My heart will always mourn the reckless step it took on the virgin edge of a flower-decked abyss. My illusions will return, yes, but uncertain, ready for the first betrayal on the path of love."</p></div></div></div>
+<div class="page" data-page="7"><div class="chapter"><h1 class="chapter-title" id="ch5">Chapter 5: Medical Studies at UST (1877-1882)</h1><div class="chapter-content"><h1>Chapter 5: Medical Studies at the University of Santo Tomas (1877-1882)</h1>
 <p>Fortunately, Rizal's tragic first romance, with its bitter disillusionment, did not adversely affect his studies in the University of Santo Tomas. After finishing the first year of a course in Philosophy and Letters (1877-78), he transferred to the medical course. During the years of his medical studies in this university, which was administered by the Dominicans, rival educators of the Jesuits, he remained loyal to Ateneo, where he continued to participate in extra-curricular activities and where he completed the vocational course in surveying. As a Thomasian he won more literary laurels, had other romances with pretty girls, and fought against Spanish students who insulted the brown Filipino students.</p>
 <h2>Mother's Opposition to Higher Education</h2>
 After graduating with the highest honors from the Ateneo, Rizal had the option to enter the University of Santo Tomas for higher studies. The Bachelor of Arts course during Spanish times was equivalent only to the high school and junior college courses today. It merely qualified a graduate to enter a university. Both Don Francisco and Paciano wanted Jose to pursue higher learning in the University of Santo Tomas.
@@ -664,8 +718,8 @@ Rizal, Ateneo's star wonder, found the atmosphere at the University of Santo Tom
 <p>*   <strong>1877-1878 (Philosophy & Letters):</strong> Cosmology & Metaphysics (Excellent), Theodicy (Excellent), History of Philosophy (Excellent) *   <strong>1878-1879 (Medicine) 1st Year:</strong> Physics (Fair), Chemistry (Fair), Natural History (Fair), Anatomy 1 (Fair), Dissection 1 (Fair) *   <strong>1879-1880 (Medicine) 2nd Year:</strong> Anatomy 2 (Good), Dissection 2 (Good), Physiology (Good), Private Hygiene (Good), Public Hygiene (Good) *   <strong>1880-1881 (Medicine) 3rd Year:</strong> General Pathology (Fair), Therapeutics (Excellent), Surgery (Good) *   <strong>1881-1882 (Medicine) 4th Year:</strong> Medical Pathology (Very Good), Surgical Pathology (Very Good), Obstetrics (Very Good)</p>
 <h2>Decision to Study Abroad</h2>
 After finishing the fourth year of his medical course, Rizal decided to study in Spain. He could no longer endure the racial bigotry, discrimination, and hostility in the University of Santo Tomas. His older brother readily approved his going to Spain, and so did his two sisters Saturnina (Neneng) and Lucia, Uncle Antonio Rivera, the Valenzuela family, and some friends.
-<p>For the first time, Rizal did not seek his parents' permission and blessings to go abroad, because he knew that they, especially his mother, would disapprove it. He did not bring his beloved Leonor into his confidence either. He had enough common sense to know that Leonor, being a woman, young and romantic at that, could not keep a secret. Thus Rizal's parents, Leonor, and the Spanish authorities knew nothing of his decision to go abroad in order to finish his medical studies in Spain, where the professors were more liberal than those of the University of Santo Tomas.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch6">Chapter 6: In Sunny Spain (1882-1885)</h1><div class="chapter-content"><h1>Chapter 6: In Sunny Spain (1882-1885)</h1>
+<p>For the first time, Rizal did not seek his parents' permission and blessings to go abroad, because he knew that they, especially his mother, would disapprove it. He did not bring his beloved Leonor into his confidence either. He had enough common sense to know that Leonor, being a woman, young and romantic at that, could not keep a secret. Thus Rizal's parents, Leonor, and the Spanish authorities knew nothing of his decision to go abroad in order to finish his medical studies in Spain, where the professors were more liberal than those of the University of Santo Tomas.</p></div></div></div>
+<div class="page" data-page="8"><div class="chapter"><h1 class="chapter-title" id="ch6">Chapter 6: In Sunny Spain (1882-1885)</h1><div class="chapter-content"><h1>Chapter 6: In Sunny Spain (1882-1885)</h1>
 <p>After finishing the fourth year of his medical course in the University of Santo Tomas, Rizal decided to complete his studies in Spain. He was disgusted by the racial prejudice of the Spanish professors and the hostile atmosphere in the university. At that time, the government of Spain was a constitutional monarchy under a written constitution which granted human rights to the people, particularly freedom of speech, freedom of the press, and freedom of assembly. Aside from this ostensible reason, he had another reason, which was more important than merely completing his studies in Spain. This was his "secret mission," which many Rizalist biographers (including Austin Craig and Wenceslao E. Retana) never mention in their writings.</p>
 <h2>Rizal's Secret Mission</h2>
 This mission, which Rizal conceived with the approval of his older brother Paciano, was to observe keenly the life and culture, languages and customs, industries and commerce, and governments and laws of the European nations in order to prepare himself in the mighty task of liberating his oppressed people from Spanish tyranny. This was evidenced in his farewell letter which was delivered to his parents only after his departure for Spain.
@@ -752,8 +806,8 @@ On November 20, 21, and 22, 1884, the serene city of Madrid exploded in bloody r
 <h2>Studies Completed in Spain</h2>
 Rizal completed his medical course in Spain. He was conferred the degree of Licentiate in Medicine by the Universidad Central de Madrid on June 21, 1884. The next academic year (1884-85) he studied and passed all subjects leading to the degree of Doctor of Medicine. Due to the fact, however, that he did not present the thesis required for graduation nor paid the corresponding fees, he was not awarded his Doctor's diploma.
 <p>Rizal also finished his studies in Philosophy and Letters, with higher grades. He was awarded the degree of Licentiate in Philosophy and Letters by the Universidad Central de Madrid on June 19, 1885 (his 25th birthday), with the rating of "Excellent" (<em>Sobresaliente</em>).</p>
-<p>At long last, Rizal completed his studies in Spain. By obtaining the degree of Licentiate in Philosophy and Letters, he became qualified to be a professor of humanities in any Spanish university. And by receiving his degree of Licentiate in Medicine, he became a full-fledged physician, qualified to practise medicine. He did not bother to secure the post-graduate degree of Doctor of Medicine because it was, together with the licentiate in philosophy and letters, good only for teaching purposes. Being a man of high intelligence and foresight, he knew that with his brown color and Asian racial ancestry no Spanish-owned university or college in the Philippines would accept him in its faculty staff.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch7">Chapter 7: Paris to Berlin (1885-1887)</h1><div class="chapter-content"><h1>Chapter 7: Paris to Berlin (1885-1887)</h1>
+<p>At long last, Rizal completed his studies in Spain. By obtaining the degree of Licentiate in Philosophy and Letters, he became qualified to be a professor of humanities in any Spanish university. And by receiving his degree of Licentiate in Medicine, he became a full-fledged physician, qualified to practise medicine. He did not bother to secure the post-graduate degree of Doctor of Medicine because it was, together with the licentiate in philosophy and letters, good only for teaching purposes. Being a man of high intelligence and foresight, he knew that with his brown color and Asian racial ancestry no Spanish-owned university or college in the Philippines would accept him in its faculty staff.</p></div></div></div>
+<div class="page" data-page="9"><div class="chapter"><h1 class="chapter-title" id="ch7">Chapter 7: Paris to Berlin (1885-1887)</h1><div class="chapter-content"><h1>Chapter 7: Paris to Berlin (1885-1887)</h1>
 <p>After completing his studies in Madrid, Rizal went to Paris and Germany in order to specialize in ophthalmology. He particularly chose this branch of medicine because he wanted to cure his mother's eye ailment. He served as assistant to the famous oculists of Europe. He also continued his travels and observations of European life and customs, government and laws in Paris, Heidelberg, Leipzig, and Berlin. In Berlin, capital of then unified Germany, he met and befriended several top German scientists—Dr. Feodor Jagor, Dr. Adolph B. Meyer, Dr. Hans Meyer, and Dr. Rudolf Virchow. His merits as a scientist were recognized by the eminent scientists of Europe.</p>
 <h2>In Gay Paris (1885-1886)</h2>
 Shortly after terminating his studies at the Central University of Madrid, Rizal, who was then 24 years old and already a physician, went to Paris in order to acquire more knowledge in ophthalmology. On his way to Paris, he stopped at Barcelona for a week to visit his friend, Maximo Viola, a medical student and a member of a rich family of San Miguel, Bulacan. During this stopover he befriended Senor Eusebio Corominas, editor of the newspaper <em>La Gaceta</em> and made a crayon sketch of Don Miguel Morayta, owner of <em>La Publicidad</em> and a statesman. He gave Editor Corominas an article on the Carolines Question, then a controversial issue, for publication.
@@ -807,8 +861,8 @@ Aside from the German women Rizal admired the German customs which he observed w
 <h2>Rizal's Darkest Winter</h2>
 Rizal spent winters in many temperate countries. The winter of 1886 in Berlin was his darkest winter. During this bleak winter, he lived in poverty because no money arrived from Calamba and he was then broke. The diamond ring which his sister, Saturnina, gave him was in the pawnshop. He could not pay his landlord. He had to skimp, eating only one meal a day. And that daily meal consisted of beef and water or some cheap vegetable soup. His clothes were old and threadbare. He washed them himself because he could not afford to pay the laundry.
 <p>Out in far-away Calamba, Paciano tried desperately to raise money. He knew his younger brother was in a dire financial situation in Berlin. But the crops had failed due to the ravages of the locusts. The sugar market collapsed. Time was of the essence, but poor Paciano was delayed in raising the necessary funds.</p>
-<p>Meanwhile, Rizal starved in Berlin and shivered with wintry cold. His health broke down due to lack of proper nourishment. He began to cough, and he feared that he was going to become sick with tuberculosis. Never had he suffered such physical blows of penury, so that his soul cried out in despair.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch8">Chapter 8: Noli Me Tangere Published in Berlin (1887)</h1><div class="chapter-content"><h1>Chapter 8: Noli Me Tangere Published in Berlin (1887)</h1>
+<p>Meanwhile, Rizal starved in Berlin and shivered with wintry cold. His health broke down due to lack of proper nourishment. He began to cough, and he feared that he was going to become sick with tuberculosis. Never had he suffered such physical blows of penury, so that his soul cried out in despair.</p></div></div></div>
+<div class="page" data-page="10"><div class="chapter"><h1 class="chapter-title" id="ch8">Chapter 8: Noli Me Tangere Published in Berlin (1887)</h1><div class="chapter-content"><h1>Chapter 8: Noli Me Tangere Published in Berlin (1887)</h1>
 <p>The bleak winter of 1886 was memorable in the life of Rizal for two reasons: first, it was a painful episode for he was hungry, sick, and despondent in a strange city and, second, it brought him great joy, after enduring so much sufferings, because his first novel <em>Noli Me Tangere</em> came off the press in March, 1887. Like the legendary Santa Claus, Dr. Maximo Viola, his friend from Bulacan, arrived in Berlin at the height of his despondency and loaned him the needed funds to publish the novel.</p>
 <h2>Idea of Writing a Novel on the Philippines</h2>
 His reading of Harriet Beecher Stowe's <em>Uncle Tom's Cabin</em>, which portrays the brutalities of American slave-owners and the pathetic conditions of the unfortunate Negro slaves, inspired Dr. Rizal to prepare a novel that would depict the miseries of his people under the lash of Spanish tyrants. He was then a student in the Central University of Madrid.
@@ -897,8 +951,8 @@ In the original manuscript of <em>Noli Me Tangere</em>, there was a chapter enti
 The friends of Rizal hailed the novel, praising it in glowing colors. As was to be expected, Rizal's enemies condemned it. Rizal anticipated the virulent attacks of his enemies, who were sore to be told the truth of their evil ways. As he told Blumentritt: "The government and the friars will probably attack the work, refuting my statements, but I trust in the God of Truth and in the persons who have actually seen our sufferings."
 <p>Of the numerous congratulatory letters received by Rizal from his friends about the <em>Noli</em>, that from Blumentritt was significant. "First of all," wrote Blumentritt, "accept my cordial congratulations for your beautiful novel about customs which interests me extraordinarily. Your work, as we Germans say, has been written with the blood of the heart, and so the heart also speaks. I continue reading it with much interest and shall beg to ask you now and then for an explanation when I find words unknown to me; for instance, the word <em>filibustero</em> must have certain meaning in the Philippines that I do not get either in the Spanish of the Peninsulars nor in that of the Spanish peoples of America."</p>
 <p>"I knew already," continued Blumentritt, "that you were a man of extraordinary talent (I had said it to Pardo de Tavera, and this could also be seen from the marvelous short time in which you have acquired my difficult and rough mother tongue), but in spite of this, your work has exceeded my hopes and I consider myself happy to have been honored with your friendship. Not only I, but also your country, may feel happy for having in you a son and a patriot. If you will continue thus, you can become one of those great men who will exercise a determinative influence over the progress of your people's spiritual life...."</p>
-<p>In London, Dr. Antonio Ma. Regidor, Filipino patriot and lawyer who had been exiled due to his complicity in the Cavite Mutiny of 1872, read avidly the <em>Noli</em> and was very much impressed by its author. On May 30, he felicitated Rizal, saying: "If the <em>Quijote</em> immortalized its author because it exposes to the world the ailments of Spain, your <em>Noli Me Tangere</em> will bring you equal glory. With your modesty and your voracious and able appraisal, you have dealt a mortal blow to that old race full of blemishes and decay. Every Filipino patriot will read your book with avidity and upon discovering in every line a veracious idea and in every word a fitting advice, he will be inspired and will regard your book as the masterpiece of a Filipino and the proof that those who thought us incapable of producing great intellects are mistaken or lying."</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch9">Chapter 9: Rizal's Grand Tour of Europe with Viola (1887)</h1><div class="chapter-content"><h1>Chapter 9: Rizal's Grand Tour of Europe with Viola (1887)</h1>
+<p>In London, Dr. Antonio Ma. Regidor, Filipino patriot and lawyer who had been exiled due to his complicity in the Cavite Mutiny of 1872, read avidly the <em>Noli</em> and was very much impressed by its author. On May 30, he felicitated Rizal, saying: "If the <em>Quijote</em> immortalized its author because it exposes to the world the ailments of Spain, your <em>Noli Me Tangere</em> will bring you equal glory. With your modesty and your voracious and able appraisal, you have dealt a mortal blow to that old race full of blemishes and decay. Every Filipino patriot will read your book with avidity and upon discovering in every line a veracious idea and in every word a fitting advice, he will be inspired and will regard your book as the masterpiece of a Filipino and the proof that those who thought us incapable of producing great intellects are mistaken or lying."</p></div></div></div>
+<div class="page" data-page="11"><div class="chapter"><h1 class="chapter-title" id="ch9">Chapter 9: Rizal's Grand Tour of Europe with Viola (1887)</h1><div class="chapter-content"><h1>Chapter 9: Rizal's Grand Tour of Europe with Viola (1887)</h1>
 <p>After the publication of the <em>Noli</em>, Rizal planned to visit the important places in Europe. Dr. Maximo Viola offered to be his traveling companion. Rizal had received Paciano's remittance of P1,000 which was forwarded by Juan Luna from Paris. He immediately paid Viola the sum of P300 which the latter kindly loaned so that the <em>Noli</em> could be printed. Having paid his debt, and with adequate funds in his pocket, he was ready to see Europe before returning to Calamba. First, he and Viola visited Potsdam, a city near Berlin, which Frederick the Great made famous.</p>
 <h2>The Trip Begins</h2>
 At dawn of May 11, 1887, Rizal and Viola, two brown-skinned doctors on a roaming spree, left Berlin by train. It was an ideal season for travel. Spring was in the air and all over Europe the flowers were blooming, the meadows were turning green, and the villages were humming with activity. According to Viola, the luggage of Rizal included all the letters he had received from his (Rizal's) family and friends. Their destination was Dresden, "one of the best cities in Germany."
@@ -951,8 +1005,8 @@ From Geneva Rizal went to Italy. He visited Turin, Milan, Florence, and Rome. On
 Rizal also visited some churches and museums like the Capitoline Museum and the Church of Santa Maria Maggiore, which is also grand.
 <p>On June 29th, the Feast Day of St. Peter and St. Paul, Rizal visited for the first time the Vatican, the palace of the Pope and the capital of Christendom. He was deeply impressed by the magnificent edifices, particularly of St. Peter's Church, the rare works of art, the vast St. Peter's Square, the colorful people, and the atmosphere of religious devotion that pervaded the Vatican.</p>
 <p>Every night, after sightseeing the whole day, Rizal returned to his hotel, very tired. "I am tired as a dog," he wrote to Blumentritt, "but I will sleep as a god."</p>
-<p>After a week of wonderful sojourn in Rome, he prepared to return to the Philippines. He had already written to his father that he was coming home.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch10">Chapter 10: First Homecoming, 1887-88</h1><div class="chapter-content"><h1>Chapter 10: First Homecoming, 1887-88</h1>
+<p>After a week of wonderful sojourn in Rome, he prepared to return to the Philippines. He had already written to his father that he was coming home.</p></div></div></div>
+<div class="page" data-page="12"><div class="chapter"><h1 class="chapter-title" id="ch10">Chapter 10: First Homecoming, 1887-88</h1><div class="chapter-content"><h1>Chapter 10: First Homecoming, 1887-88</h1>
 <p>All the alluring beauties of foreign countries and all the beautiful memories of his sojourn in alien lands could neither make Rizal forget his fatherland nor turn his back to his own nationality. True that he studied abroad, acquired the lore and languages of foreign nations, and enjoyed the friendship of many great men of the Western world; but he remained at heart a true Filipino with an unquenchable love for the Philippines and an unshakable determination to die in the land of his birth.</p>
 <p>Thus, after five years of memorable sojourn in Europe, he returned to the Philippines in August, 1887 and practised medicine in Calamba. He lived the quiet life of a country doctor. But his enemies, who resented his <em>Noli</em>, persecuted him, even threatening to kill him.</p>
 <h2>Decision to Return Home</h2>
@@ -1007,8 +1061,8 @@ Shortly before Rizal left Calamba in 1888 his friend from Lipa requested him to 
 <blockquote><p><strong>MEN:</strong> As soon as the dawn is lit with light, Forth to the fields to plow the land; Stirring work! It becomes the man, The motherland, family and the hearth. Hard though the task may prove to be, Implacable the sun is, For motherland, our wives and babes, It will be easy with our courage.</p></blockquote>> 
 <blockquote><p><strong>WIVES:</strong> Courageously set out to work, Your home's life with a faithful wife, Implanting in her children, love For wisdom, land and virtuous life. When nightfall brings us to our rest, May loving women guard our door, But if cruel fate should harm her man, The wife would toil on as before.</p></blockquote>> 
 <blockquote><p><strong>GIRLS:</strong> Hail! Hail! Who dares to work? The country's vigor and her wealth, For work lift up your brow serene, It is your blood, your life, your health. If any youth professes his love, His work shall prove, if he be good, That man who shames his times and loath Can find the way to feed his brood.</p></blockquote>> 
-<blockquote><p><strong>BOYS:</strong> Teach us the sturdy life, For down thy trails we learn ourselves, That when our country calls tomorrow, Thy purposes may be complete. And may our elders say who see us: See! How worthy of their sires! No incense can exalt our dead ones, Better a brave son who aspires.</p></blockquote></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch11">Chapter 11: In Hong Kong and Macao, 1888</h1><div class="chapter-content"><h1>Chapter 11: In Hong Kong and Macao, 1888</h1>
+<blockquote><p><strong>BOYS:</strong> Teach us the sturdy life, For down thy trails we learn ourselves, That when our country calls tomorrow, Thy purposes may be complete. And may our elders say who see us: See! How worthy of their sires! No incense can exalt our dead ones, Better a brave son who aspires.</p></blockquote></div></div></div>
+<div class="page" data-page="13"><div class="chapter"><h1 class="chapter-title" id="ch11">Chapter 11: In Hong Kong and Macao, 1888</h1><div class="chapter-content"><h1>Chapter 11: In Hong Kong and Macao, 1888</h1>
 <p>Hounded by powerful enemies, Rizal was forced to leave his country for a second time in February, 1888. He was then a full-grown man of 27 years of age, a practising physician, and a recognized man-of-letters. The first time he went abroad in May, 1882, he was a mere lad of 21, a youthful student in search of wisdom in the Old World, a romantic idealist with beautiful dreams of emancipating his people from bondage by the magic power of his pen. Times had changed. Rizal at 27 was an embittered victim of human iniquities, a disillusioned dreamer, a frustrated reformer.</p>
 <h2>The Trip to Hong Kong</h2>
 On February 3, 1888, after a short stay of six months in his beloved Calamba, Rizal left Manila for Hong Kong on board the <em>Zafiro</em>. He was sick and sad during the crossing of the choppy China Sea. He did not get off his ship when it made brief stopover at Amoy on February 7. For three reasons: (1) he was not feeling well, (2) it was raining hard, and (3) he heard that the city was dirty. He arrived in Hong Kong on February 8.
@@ -1029,8 +1083,8 @@ During his two-week visit in Hong Kong, Rizal studied Chinese life, language, dr
 <h2>Departure From Hong Kong</h2>
 On February 22, 1888, Rizal left Hong Kong on board the <em>Oceanic</em>, an American steamer. His destination was Japan. He did not like the meals on board, but he liked the ship because it was clean and efficiently managed.
 <p>His cabinmate was a British Protestant missionary who had lived in China for 27 years and knew the Chinese language very well. Rizal called him "a good man."</p>
-<p>Other passengers, with whom Rizal conversed in their own languages, were two Portuguese, two Chinese, several British, and an American woman Protestant missionary.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch12">Chapter 12: Romantic Interlude in Japan (1888)</h1><div class="chapter-content"><h1>Chapter 12: Romantic Interlude in Japan (1888)</h1>
+<p>Other passengers, with whom Rizal conversed in their own languages, were two Portuguese, two Chinese, several British, and an American woman Protestant missionary.</p></div></div></div>
+<div class="page" data-page="14"><div class="chapter"><h1 class="chapter-title" id="ch12">Chapter 12: Romantic Interlude in Japan (1888)</h1><div class="chapter-content"><h1>Chapter 12: Romantic Interlude in Japan (1888)</h1>
 <p>One of the happiest interludes in the life of Rizal was his sojourn in the land of the Cherry Blossoms for one month and a half (February 28 - April 13, 1888). He was enchanted by the natural beauty of Japan, the charming manners of the Japanese people, and the picturesque shrines. Moreover, he fell in love with a Japanese girl, whose loveliness infused joy and romance in his sorrowing heart. Her real name was Seiko Usui. Rizal affectionately called her O-Sei-San. Fate, however, cut short his happy days in Japan. He had to sacrifice his own happiness to carry on his work for the redemption of his oppressed people.</p>
 <h2>Rizal Arrives in Yokohama</h2>
 Early in the morning of Tuesday, February 28, 1888, Rizal arrived in Yokohama. He registered at the Grand Hotel.
@@ -1083,8 +1137,8 @@ Another passenger which Rizal befriended on board the <em>Belgic</em> was Tetcho
 <p>On December 1, 1888, after a last warm handshake and bidding each other "goodbye," Rizal and Tetcho parted ways—never to meet again. Rizal remained in London to conduct historical researches on Morga at the British Museum, while Tetcho returned to Japan.</p>
 <p>In 1889, shortly after his return to Japan, he published his travel diary which contained his impressions of Rizal, as follows: "Mr. Rizal was a citizen of Manila, in the Philippines. Aged about 27 to 29. Young as he was, he was proficient in seven languages." "It was in his <em>Belgic</em> that we first met. I came back to Japan by way of America with him. Ever since I had been coursing with him." "Rizal was an open-hearted man. He was not flattering. He was an accomplished, good picture, skillful on exquisite wax work, especially." "I arrived at London late in May, 1888. He importantly stayed at 'King Henry's Road,' then removed to Brown St. of Parliament Hill Road. I intended to stay here until February or March, but unfortunately London had been shrouded by fog since early October. I have a slight ailment, and it appeared to be very hard for me to spend the coming winter here. I decided to go home, and scheduled to leave London on December the First." "On December the First, I got up early, it being a fine sunny day, after uncomfortable days of fog and rain. The sun rose as if it congratulated my lucky departure for home. I took a farewell of my people and at 9:30 A.M. when I was going down the Parliament Hill Road, I met Mr. Rizal coming up to my hotel. I called him to ride with me on the coach. Mr. Rizal came from Manila. He has a good command of seven different foreign languages at the age of only twenty-seven. He was a frank and daring fellow, fond of various arts, especially good at drawing."</p>
 <p>After the publication of his travel diary, Tetcho resigned his position as editor of Tokyo newspaper, <em>Jiyu</em> (Freedom), and entered politics. In 1890 he was elected as a member of the lower house of the First Imperial Diet (Japanese parliament), where he carried on his fight for human rights. The following year (1891) he published a political novel entitled <em>Nankai-no-Doboran</em> (Storm Over The South Sea) which resembles Rizal's <em>Noli Me Tangere</em> in plot. Three years later (1894) he published another novel entitled <em>O-unabara</em> (The Big Ocean) which is similar to <em>El Filibusterismo</em>.</p>
-<p>While still a member of the Imperial Diet Tetcho died suddenly in Tokyo in February, 1896 (ten months before Rizal's execution). He was then 49 years old.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch13">Chapter 13: Rizal's Visit to the United States (1888)</h1><div class="chapter-content"><h1>Chapter 13: Rizal's Visit to the United States (1888)</h1>
+<p>While still a member of the Imperial Diet Tetcho died suddenly in Tokyo in February, 1896 (ten months before Rizal's execution). He was then 49 years old.</p></div></div></div>
+<div class="page" data-page="15"><div class="chapter"><h1 class="chapter-title" id="ch13">Chapter 13: Rizal's Visit to the United States (1888)</h1><div class="chapter-content"><h1>Chapter 13: Rizal's Visit to the United States (1888)</h1>
 <p>Rizal first saw America on May 4, 1888. His arrival in this great country was marred by racial prejudice, for he saw the discriminatory treatment of the Chinese and the Negroes by the white Americans. He kept notes of what he observed during his trip from San Francisco to New York, where he took a ship for England. From his notes and his letters to his friends, we get a wealth of first-hand impressions of America, some of which were rather unfavorable but true. Rizal was a man of truth, and he wrote what he had seen and experienced.</p>
 <h2>Arrival in San Francisco</h2>
 The steamer <em>Belgic</em>, with Rizal on board, reached San Francisco on Saturday, April 28, 1888, but because of quarantine he was only permitted to go ashore on Friday afternoon, May 4. All passengers were not allowed to land. The American health authorities placed the ship under quarantine on the ground that it came from the Far East where a cholera epidemic was alleged to be raging. Rizal was surprised because he knew there was no cholera epidemic at that time in the Far East. He joined the other passengers in protesting the unjustifiable action of the health authorities. The American consul in Japan had given the ship a clean bill of health, and the British Governor of Hong Kong certified to the absence of cholera cases in China.
@@ -1113,8 +1167,8 @@ On Sunday morning, May 13, Rizal reached New York, thus ending his trip across t
 Rizal had good and bad impressions of the United States. The good impressions were (1) the material progress of the country as shown in the great cities, huge farms, flourishing industries, and busy factories; (2) the drive and energy of the American people; (3) the natural beauty of the land; (4) the high standard of living; and (5) the opportunities for better life offered to poor immigrants.
 <p>One bad impression Rizal had of America was the lack of racial equality. There existed racial prejudice which was inconsistent with the principles of democracy and freedom of which the Americans talk so much but do not practise. Thus he wrote to Ponce: "They do not have true civil liberty. In some states the Negro cannot marry a White woman, nor a White man a Negress. Prejudice against the Chinese leads to difficulty for other Asiatics who, like the Japanese, are mistaken for Chinese by the ignorant, and therefore being disliked, too."</p>
 <p>In 1890, two years after Rizal's visit to the United States, Jose Alejandro, who was then studying engineering in Belgium, roomed with him on 38 Rue Philippe Champagne, Brussels. Alejandro had never been in America, so that one day he asked Rizal: "What impressions do you have of America?"</p>
-<p>"America," answered Rizal, "is the land par excellence of freedom but only for the whites."</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch14">Chapter 14: Rizal in London (1888-89)</h1><div class="chapter-content"><h1>Chapter 14: Rizal in London (1888-89)</h1>
+<p>"America," answered Rizal, "is the land par excellence of freedom but only for the whites."</p></div></div></div>
+<div class="page" data-page="16"><div class="chapter"><h1 class="chapter-title" id="ch14">Chapter 14: Rizal in London (1888-89)</h1><div class="chapter-content"><h1>Chapter 14: Rizal in London (1888-89)</h1>
 <p>After visiting the United States, Rizal lived in London from May, 1888 to March, 1889. He chose this English city to be his new home for three reasons: (1) to improve his knowledge of the English language; (2) to study and annotate Morga's <em>Sucesos de las Islas Filipinas</em>, a rare copy of which he heard to be available in the British Museum; and (3) London was a safe place for him to carry on his fight against Spanish tyranny. In London, he engaged in Filipiniana studies, completed annotating Morga's book, wrote many articles for <em>La Solidaridad</em> in defense of his people against Spanish critics, penned a famous letter to the young women of Malolos, carried on his voluminous correspondence with Blumentritt and relatives, and had a romance with Gertrude Beckett.</p>
 <h2>Trip Across the Atlantic</h2>
 The trans-Atlantic voyage of Rizal from New York to Liverpool was a pleasant one. He won many friends of different nationalities on board the palatial <em>City of Rome</em> because of his friendly nature and his ability as a linguist. Rizal entertained the American and European passengers with his marvelous skill with the yo-yo as an offensive weapon. The yo-yo is a small wooden disc attached to a string from the finger. It is used by Filipino children as a toy. But Rizal manipulated it as a weapon of offense, to the great astonishment of the foreigners.
@@ -1157,8 +1211,8 @@ Rizal's first article which appeared in <em>La Solidaridad</em> was entitled <em
 <p>Rizal, being a man of normal emotion, found exhilarating joy in Gertrude's company. Their friendship drifted towards romance. Rizal affectionately called her "Gertie," and in reciprocation, she fondly called him "Pettie." As their flirtation was fast approaching the point of no return, Rizal suddenly realized that he could not marry Gertie for he had a mission to fulfill in life.</p>
 <p>With iron will, he suppressed the passionate yearning of his heart, and decided to go away so that "Gertie" may forget him. Before leaving London, he finished four sculptural works: (1) "Prometheus Bound," (2) "The Triumph of Death over Life," (3) "The Triumph of Science over Death," and (4) a composite carving of the heads of the Beckett sisters. The last-named carving he gave as a farewell gift to the Beckett sisters. He packed "The Triumph of Death over Life" and "The Triumph of Science over Death" and sent them to his friend, Professor Blumentritt in Leitmeritz.</p>
 <h2>Adios, London</h2>
-Suddenly on March 19, 1889, Rizal bade goodbye to the kind Beckett family (particularly Gertrude) and left London for Paris. He was sad as he crossed the English Channel for he cherished so many beautiful memories of London.</div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch15">Chapter 15: Second Sojourn in Paris and Universal Exposition of 1889</h1><div class="chapter-content"><h1>Chapter 15: Rizal's Second Sojourn in Paris and the Universal Exposition of 1889</h1>
+Suddenly on March 19, 1889, Rizal bade goodbye to the kind Beckett family (particularly Gertrude) and left London for Paris. He was sad as he crossed the English Channel for he cherished so many beautiful memories of London.</div></div></div>
+<div class="page" data-page="17"><div class="chapter"><h1 class="chapter-title" id="ch15">Chapter 15: Second Sojourn in Paris and Universal Exposition of 1889</h1><div class="chapter-content"><h1>Chapter 15: Rizal's Second Sojourn in Paris and the Universal Exposition of 1889</h1>
 <p>Paris in the spring of 1889 was bursting with gaiety and excitement because of the Universal Exposition. Thousands of visitors from all corners of the world crowded every hotel, inn, and boarding house. Everywhere in the metropolis the hotel rates and house rents were soaring sky-high. Rizal, fresh from London, was caught in the whirl of gay Parisian life. Despite the social parties and the glittering lights of the city, he continued his fruitful artistic, literary, and patriotic labors. He published his annotated edition of Morga's <em>Sucesos</em>; founded three Filipino societies, the Kidlat Club, the Indios Bravos, and the R.D.L.M.; and wrote <em>Por Telefono</em> (under the pen name "Dimas Alang"), a satire against Fr. Salvador Font.</p>
 <h2>Difficulty of Finding Quarters</h2>
 In March 1889, it was extremely difficult for a visitor to find living quarters in Paris. The approaching Universal Exposition of 1889, which was scheduled to open on May 6, 1889, attracted thousands of tourists so that all hotel accommodations were taken. To the great disgust of Rizal, the cost of living spiraled high because the French landlords, taking advantage of the great demand for living quarters, raised the rents of their rooms.
@@ -1240,8 +1294,8 @@ By this opening paragraph, Rizal predicted much ahead of his times that people c
 <h2>Christmas in Paris</h2>
 December 25, 1889 was a wintry day in Paris. Rizal and Jose Albert, who were living frugally in a small room occupied by Capitan Justo Trinidad, planned to have a sumptuous Christmas dinner. They scraped enough money to celebrate Yuletide. They prepared a Christmas dinner with fried chicken, rice and vegetables. This dinner proved to be Rizal's last Christmas dinner in Paris.
 <p>Shortly after New Year, Rizal made a brief visit to London. Biographers do not know the purpose of this visit. It may be due to two reasons: (1) to check up his annotated edition of Morga's <em>Sucesos</em> with the original copy in the British Museum, and (2) to see Gertrude Beckett for the last time.</p>
-<p>By the middle of January 1890, he was back in Paris. He complained of a terrible headache. At that time an epidemic of influenza was raging in Europe. Fortunately, he was not stricken with flu.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch16">Chapter 16: In Belgian Brussels (1890)</h1><div class="chapter-content"><h1>Chapter 16: In Belgian Brussels (1890)</h1>
+<p>By the middle of January 1890, he was back in Paris. He complained of a terrible headache. At that time an epidemic of influenza was raging in Europe. Fortunately, he was not stricken with flu.</p></div></div></div>
+<div class="page" data-page="18"><div class="chapter"><h1 class="chapter-title" id="ch16">Chapter 16: In Belgian Brussels (1890)</h1><div class="chapter-content"><h1>Chapter 16: In Belgian Brussels (1890)</h1>
 <p>On January 28, 1890, Rizal left Paris for Brussels, capital of Belgium. Two reasons impelled Rizal to leave Paris, namely: (1) the cost of living in Paris was very high because of the Universal Exposition, and (2) the gay social life of the city hampered his literary works, especially the writing of his second novel <em>El Filibusterismo</em>. His friends, including M.H. del Pilar and Valentin Ventura, were of the belief that he left because he was running away from a girl just as he left London. When he told them that the reason for his leaving Paris was economic because his money was dwindling, Ventura generously invited him to live with him in Paris without paying rent. He could not accept Ventura's invitation, for he had a high sense of dignity and would not accept charity from any man.</p>
 <h2>Life in Brussels</h2>
 Rizal was accompanied by Jose Albert when he moved to Brussels. They lived in a modest boarding house on Rue des Philosophes No. 26, which was run by two Jacoby sisters (Suzanne and Marie). Later Albert left the city, and was replaced by Jose Alejandro, an engineering student. In Brussels, Rizal was busy writing his second novel which was a continuation of the <em>Noli</em>. He was never idle even for an hour. Aside from writing its chapters, he wrote articles for <em>La Solidaridad</em> and letters to his family and friends. Being a physician, he spent part of his time in the medical clinic. For recreation, he had gymnastics at the gymnasium and target practice and fencing at the armory. Thus he wrote to Antonio Luna: "I go to the clinic, I read, I write, I go to the gymnasium and to the armory. Speaking of shooting, I am sending you a target, containing ten bullet holes; it was seven and a half meters from me, at twenty-five meters I can put all my shots into a twenty-centimeter target."
@@ -1293,8 +1347,8 @@ Two things brought some measure of cheer to the despondent Rizal, as he was prep
 <p>Although Rizal was in faraway Madrid, Suzanne could not forget him. She wrote to him in French:</p>
 <blockquote><p>"Where are you now? Do you think of me once in a while? I am reminded of our tender conversations, reading your letters, although it is cold and indifferent. I have here in your letter I have something which makes up for your absence. How pleased I would be to follow you, to travel with you who are always in my thoughts.</p></blockquote>> 
 <blockquote><p>You wish me an inch of luck, but forget that in the absence of a beloved one a tender heart cannot feel happy. A thousand things serve to distract your mind, my friend; but in my case, I am sad, lonely, always alone with my thoughts, nothing, absolutely nothing relieves my sorrow. Are you coming back? That's what I want and desire most ardently—you cannot refuse me. I do not despair and I limit myself to murmuring against time which runs so fast when it carries us toward separation, but goes so slowly when it's bringing us together. It is I feel very unhappy thinking that perhaps I might never see you again.</p></blockquote>> 
-<blockquote><p>Goodbye! You know with one word you can make me very happy. Aren't you going to write to me?"</p></blockquote></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch17">Chapter 17: Misfortunes in Madrid (1890-91)</h1><div class="chapter-content"><h1>Chapter 17: Misfortunes in Madrid (1890-91)</h1>
+<blockquote><p>Goodbye! You know with one word you can make me very happy. Aren't you going to write to me?"</p></blockquote></div></div></div>
+<div class="page" data-page="19"><div class="chapter"><h1 class="chapter-title" id="ch17">Chapter 17: Misfortunes in Madrid (1890-91)</h1><div class="chapter-content"><h1>Chapter 17: Misfortunes in Madrid (1890-91)</h1>
 <p>Early in August, 1890, Rizal arrived in Madrid. He tried all legal means to seek justice for his family and the Calamba tenants, but to no avail. Disappointment after disappointment piled on him, until the cross he bore seemed insuperable to carry. He almost fought two duels—one with Antonio Luna and the other with Wenceslao E. Retana. On top of his misfortunes, Leonor Rivera married a British engineer. The infidelity of the girl, with whom he was engaged for eleven years, broke his heart. With resilient strength of character, he survived the bitter pangs of love's disillusionment and continued his mission to redeem his oppressed people.</p>
 <h2>Failure to Get Justice for Family</h2>
 Upon arrival in Madrid, Rizal immediately sought the help of the Filipino colony, the Asociacion Hispano-Filipina, and the liberal Spanish newspapers (<em>La Justicia, El Globo, La Republica, El Resumen</em>, etc.) in securing justice for the oppressed Calamba tenants, including his family. Together with M.H. del Pilar (who acted as his lawyer) and Dr. Dominador Gomez (secretary of the Asociacion Hispano-Filipina), he called on the Minister of Colonies (Señor Fabie) in order to protest the injustices committed by Governor General Valeriano Weyler and the Dominicans against the Calamba folks.
@@ -1335,8 +1389,8 @@ The election took place during the first week of February, 1891. The Filipinos w
 <h2>Adios, Madrid</h2>
 Rizal wrote a brief note thanking his compatriots for electing him as <em>Responsable</em>. Sadly, he packed up his bags, paid his bills, and boarded a train leaving for Biarritz.
 <p>As his train pulled out of the railway station, he gazed through its window at the city of Madrid, where he was happy during his first sojourn (1882-85) but unhappy on his second visit (1890-91). It was the last time he saw Madrid. His agonizing heart bade goodbye to the metropolis, of which he had written years ago:</p>
-<blockquote><p>"Madrid is one of the gayest cities of the world which combines the spirit of Europe and the East, which has adopted the orderliness, the convenience, the bustle of civilized Europe without disdaining, without repelling, the brilliant colors, the ardent passions, the primitive customs of the African tribes, or the chivalrous Arabs whose traces are still recognizable everywhere, in the looks, feelings, and prejudices of the people, and even in their laws."</p></blockquote></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch18">Chapter 18: Biarritz Vacation and Romance with Nelly Boustead (1891)</h1><div class="chapter-content"><h1>Chapter 18: Biarritz Vacation and Romance with Nelly Boustead (1891)</h1>
+<blockquote><p>"Madrid is one of the gayest cities of the world which combines the spirit of Europe and the East, which has adopted the orderliness, the convenience, the bustle of civilized Europe without disdaining, without repelling, the brilliant colors, the ardent passions, the primitive customs of the African tribes, or the chivalrous Arabs whose traces are still recognizable everywhere, in the looks, feelings, and prejudices of the people, and even in their laws."</p></blockquote></div></div></div>
+<div class="page" data-page="20"><div class="chapter"><h1 class="chapter-title" id="ch18">Chapter 18: Biarritz Vacation and Romance with Nelly Boustead (1891)</h1><div class="chapter-content"><h1>Chapter 18: Biarritz Vacation and Romance with Nelly Boustead (1891)</h1>
 <p>To seek solace for his disappointments in Madrid, Rizal took a vacation in the resort city of Biarritz on the Basque coast in southern France, along the Bay of Biscay near the Spanish border. He was a guest of the rich Boustead family at its winter residence, Villa Eliada. He had befriended Mr. Eduardo Boustead and his wife and two charming daughters (Adelina and Nellie) in Paris in 1889-90. He used to fence with the Boustead sisters at the studio of Juan Luna and to attend parties at the Boustead Parisian home. It was in Biarritz where he had a serious romance with Nellie and finished the last chapter of his second novel, <em>El Filibusterismo</em>.</p>
 <h2>With the Bousteads in Biarritz</h2>
 When Rizal arrived in Biarritz at the beginning of February, 1891, he was warmly welcomed by the Bousteads, particularly Mr. Boustead who had taken a great liking for him because of his remarkable talent. As a family guest, he was treated with friendliness and hospitality by Mrs. Boustead, Adelina, Nellie, and Aunt Isabel (Mrs. Boustead's sister).
@@ -1371,8 +1425,8 @@ Simultaneous with his retirement from the Propaganda Movement, Rizal ceased writ
 <blockquote><p>"I am extremely surprised at your letter, telling me about resentments, disagreements, and reconciliations, etc. I believe it is useless to talk about what does not exist, and if it has existed, it ought to have evaporated in the past. I think like you do, that there being nothing, one ought not to waste time talking about it. If I stopped writing for <em>La Solidaridad</em>, it was because of several reasons: 1st, I need time to work on my book; 2nd, I wanted other Filipinos to work also; 3rd, I considered it very important to the party that there be unity in the work; and you are already at the top and I also have my own ideas, it is better to leave you alone to direct the policy such as you understand it and I do not meddle in it. This has two advantages: It leaves both of us free, and it increases your prestige, which is very necessary, inasmuch as men of prestige are needed in our country. This does not mean to say that I need not work and follow the course of your work. I am like an army corps who, at a needed moment, you will see arrive to descend upon the flanks of the enemy before you. Only ask God to give me the means to do it. I fight for the nation, the Philippines."</p></blockquote>
 <h2>Revising the Fili for Publication</h2>
 In Brussels, Rizal worked day after day revising the finished manuscript of <em>El Filibusterismo</em> and readied it for printing. Apparently, the revision was mostly completed on May 30, 1891. On this date, he wrote Jose Ma. Basa: "My book is now ready to go to press; the first twenty chapters are already corrected and can be printed and I am recopying the rest. If I receive any money you will surely have it in July. I am writing it with more ardor than the <em>Noli</em> and although it is not so cheerful, at least it is more profound and more perfect... In case I do not receive money, will you ask them to send me money for the printing of my book? If not, I will be leaving this place and be with you."
-<p>Two weeks later, on June 13, Rizal informed Basa: "I am now negotiating with a printing firm and as I do not know if it will be printed here (Belgium) or in Spain, I cannot send it to you as yet. In case it is not published here, I will send it to you by the next mail. Only three chapters are left to be corrected. It is longer than the <em>Noli</em>, first part. It will be finished before the 16th of this month. If by chance anything happens to me, I leave its publication to Antonio Luna, including its correction... If my <em>Noli</em> (sic, <em>Fili</em>) is not published, I shall board a train on the following day when I receive your letter with the passage-money; but if my book is published I shall have to wait until it comes off the press."</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch19">Chapter 19: El Filibusterismo Published in Ghent (1891)</h1><div class="chapter-content"><h1>Chapter 19: El Filibusterismo Published in Ghent (1891)</h1>
+<p>Two weeks later, on June 13, Rizal informed Basa: "I am now negotiating with a printing firm and as I do not know if it will be printed here (Belgium) or in Spain, I cannot send it to you as yet. In case it is not published here, I will send it to you by the next mail. Only three chapters are left to be corrected. It is longer than the <em>Noli</em>, first part. It will be finished before the 16th of this month. If by chance anything happens to me, I leave its publication to Antonio Luna, including its correction... If my <em>Noli</em> (sic, <em>Fili</em>) is not published, I shall board a train on the following day when I receive your letter with the passage-money; but if my book is published I shall have to wait until it comes off the press."</p></div></div></div>
+<div class="page" data-page="21"><div class="chapter"><h1 class="chapter-title" id="ch19">Chapter 19: El Filibusterismo Published in Ghent (1891)</h1><div class="chapter-content"><h1>Chapter 19: El Filibusterismo Published in Ghent (1891)</h1>
 <p>Days flew swiftly for Rizal in Brussels like flying arrows. Day in and day out, he was busy revising and polishing the manuscript of <em>El Filibusterismo</em> so that it could be ready for the press. He had begun writing it in October, 1887, while practising medicine in Calamba. The following year (1888), in London, he made some changes in the plot and corrected some chapters already written. He wrote more chapters in Paris and Madrid, and finished the manuscript in Biarritz, on March 29, 1891. It took him, therefore, three and a half years to write his second novel.</p>
 <h2>Privations in Ghent</h2>
 On July 5, 1891, Rizal left Brussels for Ghent, a famous university city in Belgium. His reasons for moving to Ghent were (1) the cost of printing in Ghent was cheaper than in Brussels, and (2) to escape from the enticing attraction of Petite Suzanne. In Ghent, he met two compatriots, Jose Alejandro (from Pampanga) and Edilberto Evangelista (from Manila), both studying engineering in the world-famed University of Ghent.
@@ -1449,8 +1503,8 @@ Rizal had other unfinished novels. One of them is entitled <em>Makamisa</em>, a 
 <p>Another novel which Rizal started to write was entitled <em>Diktimario</em>. It is unfinished, written in pure Spanish. He wrote it during his exile in Dapitan to depict the town life and customs. The manuscript consists of 8 pages, 23 cm. x 16 cm.</p>
 <p>A novel in Spanish about the life in Pili, a town in Laguna, is also unfinished. The manuscript consists of 147 pages, 8½" x 6½", without title. Among the characters are the following: Padre Agaton, a Spanish friar; Capitan Panchong and Capitana Barang; Cecilia, their pretty daughter; Isagani, lover of Cecilia; Capitan Crispin, political rival of Panchong; and Dr. Lopez, a freethinker.</p>
 <p>Another unfinished novel of Rizal, also "without title", is about Cristobal, a youthful Filipino student who has returned from Europe. The manuscript consists of 34 pages, 8½" x 11". Among the characters are Cristobal, who has studied for 12 years in Europe; Amelia, his sweetheart; Capitan Ramon, the father of Cristobal; a Dominican friar; a Franciscan friar; and a Spanish lieutenant of the Guardia Civil.</p>
-<p>The beginnings of another novel are contained in two notebooks—the first notebook contains 31 written pages, 15 cm. x 22 cm., and the second 12 written pages, 22 cm. x 17 cm. Through the mouth of the celestial characters, the author describes the deplorable conditions of the Philippines. This unfinished novel is written in Spanish, and the style is ironic.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch20">Chapter 20: Ophthalmic Surgeon in Hong Kong (1891-92)</h1><div class="chapter-content"><h1>Chapter 20: Ophthalmic Surgeon in Hong Kong (1891-92)</h1>
+<p>The beginnings of another novel are contained in two notebooks—the first notebook contains 31 written pages, 15 cm. x 22 cm., and the second 12 written pages, 22 cm. x 17 cm. Through the mouth of the celestial characters, the author describes the deplorable conditions of the Philippines. This unfinished novel is written in Spanish, and the style is ironic.</p></div></div></div>
+<div class="page" data-page="22"><div class="chapter"><h1 class="chapter-title" id="ch20">Chapter 20: Ophthalmic Surgeon in Hong Kong (1891-92)</h1><div class="chapter-content"><h1>Chapter 20: Ophthalmic Surgeon in Hong Kong (1891-92)</h1>
 <p>After the publication of <em>El Filibusterismo</em>, Rizal left Europe for Hong Kong, where he lived from November, 1891 to June, 1892. His reasons for leaving Europe were (1) life was unprofitable in Europe because of his political differences with M.H. del Pilar and other Filipinos in Spain; and (2) to be near his idolized Philippines and family. Before sailing for Hong Kong, he notified Del Pilar that he was retiring from the political arena in Spain in order to preserve unity among the compatriots and that despite their parting of ways, he had the highest regard for him.</p>
 <h2>Farewell to Europe</h2>
 On October 3, 1891, two weeks after the publication of the <em>Fili</em>, Rizal left Ghent for Paris, where he stayed a few days to say goodbye to the Lunas, the Pardo de Taveras, the Venturas, and other friends. He proceeded by train to Marseilles and on October 12 he boarded the steamer <em>Oceana</em> bound for Hong Kong. He brought with him a letter of recommendation by Juan Luna for Manuel Camus, a compatriot living in Singapore, and 600 copies of the <em>Fili</em>.
@@ -1507,8 +1561,8 @@ On June 21, 1892, Rizal penned another letter in Hong Kong for Governor Despujol
 <h2>Rizal Falls Into Spanish Trap</h2>
 Immediately after Rizal's departure from Hong Kong, the Spanish consul-general, who issued the government guarantee of safety, sent a cablegram to Governor Despujol that the "victim is in the trap". On the same day (June 21, 1892) a secret case was filed in Manila against Rizal and his followers "for anti-religious and anti-patriotic agitation...".
 <p>The deceitful Despujol ordered his secretary, Luis de la Torre, to find out if Rizal was naturalized as a German citizen, as was rumored, so that he might take proper action against one "who had the protection of a strong nation".</p>
-<p>Meanwhile, Rizal and his sister were peacefully crossing the China Sea. They were fully unaware of the Spanish duplicity.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch21">Chapter 21: Second Homecoming and The Liga Filipina</h1><div class="chapter-content"><h1>Chapter 21: Second Homecoming and The Liga Filipina</h1>
+<p>Meanwhile, Rizal and his sister were peacefully crossing the China Sea. They were fully unaware of the Spanish duplicity.</p></div></div></div>
+<div class="page" data-page="23"><div class="chapter"><h1 class="chapter-title" id="ch21">Chapter 21: Second Homecoming and The Liga Filipina</h1><div class="chapter-content"><h1>Chapter 21: Second Homecoming and The Liga Filipina</h1>
 <p>Rizal's bold return to Manila in June, 1892, was his second homecoming, his first homecoming from abroad being in August, 1887. It marked his re-entry into the hazardous campaign for reforms. He firmly believed that the fight for Filipino liberties had assumed a new phase; it must be fought in the Philippines, not in Spain. "The battlefield is in the Philippines," he told countrymen in Europe, "There is where we should meet. There we will help one another, there together we will suffer or triumph perhaps." Earlier, in a letter to Blumentritt dated December 31, 1891—about six months before his return—he reiterated this belief: "I believe that La Solidaridad is no longer our battlefield; now it is a new struggle... the fight is no longer in Madrid." In going home to lead anew the reform movement, he was like the biblical Daniel bearding the Spanish lion in its own den.</p>
 <h2>Arrival in Manila with Suite</h2>
 At noon of June 26, 1892, Rizal and his widowed sister Lucia (wife of the late Mariano Herbosa) arrived in Manila. A meticulous diarist, he described his second homecoming as follows: 
@@ -1541,8 +1595,8 @@ On Wednesday, July 6, Rizal went to Malacañang Palace to resume his series of i
 The same issue of the <em>Gaceta</em> (July 7, 1892) contained Governor General Despujol's decree deporting Rizal to "one of the islands in the South". The gubernatorial decree gave the reasons for Rizal's deportation, as follows:
 <ol><li>Rizal had published books and articles abroad which showed disloyalty to Spain and which were "frankly anti-Catholic" and "imprudently anti-friar".</li><li>A few hours after his arrival in Manila "there was found in one of the packages... a bundle of handbills entitled <em>Pobres Frailes</em>, in which the patient and humble generosity of Filipinos is satirized, and which accusation is published against the customs of the religious orders".</li><li>His novel <em>El Filibusterismo</em> was dedicated to the memory of three "traitors" (Burgos, Gomez, and Zamora), and on the title page he wrote that in view of the vices and errors of the Spanish administration, "the only salvation for the Philippines was separation from the mother country".</li><li>"The end which he pursues in his efforts and writings is to tear from the loyal Filipino breasts the treasures of our holy Catholic faith".</li></ol>
 Shortly after midnight of July 14 (that is 12:30 a.m. of July 15, 1892), Rizal was brought under heavy guard to the steamer <em>Cebu</em> which was sailing for Dapitan. This steamer under Captain Delgras departed at 1:00 A.M., July 15, sailing south, passing Mindoro and Panay, and reaching Dapitan on Sunday the 17th of July, at 7:00 in the evening.
-<p>Captain Delgras went ashore and handed Rizal over to Captain Ricardo Carnicero, Spanish commandant of Dapitan. That same night, July 17, 1892, Rizal began his exile in lonely Dapitan which would last until July 31, 1896, a period of four years.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch22">Chapter 22: Exile in Dapitan, 1892-96</h1><div class="chapter-content"><h1>Chapter 22: Exile in Dapitan, 1892-96</h1>
+<p>Captain Delgras went ashore and handed Rizal over to Captain Ricardo Carnicero, Spanish commandant of Dapitan. That same night, July 17, 1892, Rizal began his exile in lonely Dapitan which would last until July 31, 1896, a period of four years.</p></div></div></div>
+<div class="page" data-page="24"><div class="chapter"><h1 class="chapter-title" id="ch22">Chapter 22: Exile in Dapitan, 1892-96</h1><div class="chapter-content"><h1>Chapter 22: Exile in Dapitan, 1892-96</h1>
 <p>Rizal lived in exile in far-away Dapitan, a remote town in Mindanao which was under the missionary jurisdiction of Jesuits, from 1892 to 1896. This four-year interregnum in his life was tediously unexciting, but was abundantly fruitful with varied achievements. He practiced medicine, pursued scientific studies, continued his artistic and literary works, widened his knowledge of languages, established a school for boys, promoted community development projects, invented a wooden machine for making bricks, and engaged in farming and commerce.</p>
 <p>Despite his multifarious activities, he kept an extensive correspondence with his family, relatives, fellow reformists, and eminent scientists and scholars of Europe, including Blumentritt, Reinhold Rost, A. B. Meyer, W. Joest of Vienna, C. Knutzel of Stuttgart, and N. M. Keil of Prague.</p>
 <h2>Beginning of Exile in Dapitan</h2>
@@ -1693,8 +1747,8 @@ Great was Rizal's joy in receiving the gladsome news from Malacañang. At last, 
 <blockquote><p>Pilgrim, begone! Nor return more hereafter, Dry are the tears that a while for thee ran; Pilgrim, begone! And forget thine affliction, Loud laughs the world at the sorrows of man.</p></blockquote>
 <h2>Adios, Dapitan</h2>
 On July 31, 1896, Rizal's four-year exile in Dapitan came to an end. At midnight of that date, he embarked on board the steamer <em>España</em>. He was accompanied by Josephine, Narcisa, Angelica (Narcisa's daughter), his three nephews, and six pupils. Almost all Dapitan folks, young and old, were at the shore to bid him goodbye. Many wept as the steamer sailed away—especially the other pupils who were too poor to accompany their beloved teacher to Manila. As farewell music, the town brass band strangely played the dolorous Funeral March of Chopin. As its melancholy melody floated in the air, Rizal must have felt it deeply, for with his presentiment of death, it seemed an obsequy or a requiem.
-<p>As the steamer pushed out into the sea, Rizal gazed for the last time on Dapitan with his hands waving in farewell salute to its kind and hospitable folks and with a crying heart filled with tears of nostalgic memories. When he could no longer see the dim shoreline, he sadly went to his cabin and wrote in his diary: "I have been in that district four years, thirteen days, and a few hours."</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch23">Chapter 23: Last Trip Abroad, (1896)</h1><div class="chapter-content"><h1>Chapter 23: Last Trip Abroad, (1896)</h1>
+<p>As the steamer pushed out into the sea, Rizal gazed for the last time on Dapitan with his hands waving in farewell salute to its kind and hospitable folks and with a crying heart filled with tears of nostalgic memories. When he could no longer see the dim shoreline, he sadly went to his cabin and wrote in his diary: "I have been in that district four years, thirteen days, and a few hours."</p></div></div></div>
+<div class="page" data-page="25"><div class="chapter"><h1 class="chapter-title" id="ch23">Chapter 23: Last Trip Abroad, (1896)</h1><div class="chapter-content"><h1>Chapter 23: Last Trip Abroad, (1896)</h1>
 <p>No longer an exile, Rizal had a pleasant trip from Dapitan to Manila, with delightful stopovers in Dumaguete, Cebu, Iloilo, Capiz, and Romblon. He missed the regular steamer <em>Isla de Luzon</em>, which sailed to Spain the day before he arrived in Manila Bay. While waiting for the next ship for Spain, he was kept as a "guest" on board the Spanish cruiser <em>Castilla</em>. Meanwhile, on August 25, 1896, Andres Bonifacio and the Katipunan raised the cry of revolution in the hills of Balintawak, a few miles north of Manila. Rizal, worried about the raging hostilities, left for Spain on the steamer <em>Isla de Panay</em> on September 3, 1896. It was his last trip abroad.</p>
 <h2>From Dapitan to Manila</h2>
 Leaving Dapitan at midnight, July 31, 1896, the <em>España</em>, with Rizal and party on board, sailed northward. At dawn the next day (Saturday, August 1), it anchored at Dumaguete, capital of Negros Oriental. "Dumaguete," wrote Rizal in his travel diary, "spreads out on the beach. There are big houses, some with galvanized iron roofing. Surrounding are the house of a lady, whose name I have forgotten, which is occupied by the government and another one just begun with many ipil posts."
@@ -1741,8 +1795,8 @@ About 6:25 p.m., September 30, the steamer anchored at Malaga. Being confined to
 <p>On October 3, at 10:00 o'clock in the morning, the <em>Isla de Panay</em> arrived in Barcelona, with Rizal a prisoner on board. The trip from Manila to Barcelona lasted exactly 30 days. He was kept under heavy guard in his cabin for three days. His tailor was no longer the ship captain but the Military Commander of Barcelona, who happened to be General Eulogio Despujol, the same one who ordered his banishment to Dapitan in July, 1892. It was one of those coincidences in the lives of men that make history stranger than fiction.</p>
 <p>On his second day in Barcelona, Rizal, although being incommunicado in his cabin, noticed the city celebration of the feast of Our Lady of the Pillar, the patroness of Barcelona's famous basilica. He recorded it on his diary as follows: "At 6:00 in the morning many cannon shots awakened us. It seems that they are in honor of the feast of Our Lady of the Pillar. At 12:00 o'clock I counted as many as 21 cannon shots and at 6:00 there were again so many. At night there was a concert in the dining room which can be heard from my cabin."</p>
 <p>At 3:00 a.m. on October 6, Rizal was awakened by the guards and escorted to the grim and infamous prison fortress named Montjuïc. He spent the whole morning in a cell. About 2:00 in the afternoon, he was taken out of prison by the guards and brought to the headquarters of General Despujol. In the interview, which lasted a quarter of an hour, the brusque general told Rizal that he would be shipped back to Manila on board the transport ship <em>Colon</em> which was leaving that evening.</p>
-<p>After the interview, Rizal was taken aboard the <em>Colon</em>, which was "full of soldiers and officers and their families". At 8:00 p.m., October 6, the ship left Barcelona, with Rizal on board.</p></div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch24">Chapter 24: Last Homecoming and Trial</h1><div class="chapter-content"><h1>Chapter 24: Last Homecoming and Trial</h1>
+<p>After the interview, Rizal was taken aboard the <em>Colon</em>, which was "full of soldiers and officers and their families". At 8:00 p.m., October 6, the ship left Barcelona, with Rizal on board.</p></div></div></div>
+<div class="page" data-page="26"><div class="chapter"><h1 class="chapter-title" id="ch24">Chapter 24: Last Homecoming and Trial</h1><div class="chapter-content"><h1>Chapter 24: Last Homecoming and Trial</h1>
 <p>Rizal's homecoming in 1896, the last in his life, was his saddest return to his beloved native land. He knew he was facing the supreme test, which might mean the sacrifice of his life, but he was unafraid. As a matter of fact, he welcomed it gladly; he dared to meet his enemies and to offer himself as a sacrificial victim to their sadistic lust and unholy designs, for he knew that his blood would water the seeds of Filipino freedom. The trial that was held shortly after his homecoming was a mockery of justice. His enemies howled like mad dogs for his blood, and they got it, without benefit of genuine justice.</p>
 <h2>A Martyr's Last Homecoming</h2>
 Only six days since leaving Barcelona on Tuesday, October 6, 1896, Rizal conscientiously recorded the events in his diary. He was given a cabin on the second class and, although strictly guarded, he was courteously treated by the army officers. "The officer on duty," he wrote in his diary, "seems amiable, refined, and polite, with the seriousness of his duty."
@@ -1793,8 +1847,8 @@ The trial of Rizal was an eloquent proof of Spanish injustice and misrule. More 
 <h2>Polavieja Signs Rizal's Execution</h2>
 On December 28th, Polavieja approved the decision of the court-martial and ordered Rizal to be shot at 7:00 o'clock in the morning of December 30 at Bagumbayan Field (Luneta). His decree on this matter runs as follows:
 <blockquote><p>"Manila, December 28, 1896: Conformably to the foregoing opinion I approve the sentence dictated by the Court Martial in the present case, by virtue of which the death penalty is imposed on the accused Jose Rizal Mercado, which shall be executed by shooting him at 7:00 o'clock in the morning of the 30th of this month in the field of Bagumbayan. For compliance and the rest that may correspond, let this be returned to the Judge Advocate, Captain Don Rafael Dominguez. (Signed) Camilo G. de Polavieja"</p></blockquote>
-For signing the fallacious document ordering the execution of Dr. Rizal, Governor General Polavieja won the eternal odium of the Filipino people. He and other Spanish officials who were responsible for the death of Rizal will evermore remain as obnoxious villains in Philippine history.</div></div>
-<div class="chapter"><h1 class="chapter-title" id="ch25">Chapter 25: Martyrdom at Bagumbayan</h1><div class="chapter-content"><h1>Chapter 25: Martyrdom at Bagumbayan</h1>
+For signing the fallacious document ordering the execution of Dr. Rizal, Governor General Polavieja won the eternal odium of the Filipino people. He and other Spanish officials who were responsible for the death of Rizal will evermore remain as obnoxious villains in Philippine history.</div></div></div>
+<div class="page" data-page="27"><div class="chapter"><h1 class="chapter-title" id="ch25">Chapter 25: Martyrdom at Bagumbayan</h1><div class="chapter-content"><h1>Chapter 25: Martyrdom at Bagumbayan</h1>
 <p>After the court-martial, Rizal returned to his cell in Fort Santiago to prepare his rendezvous with destiny. During his last 24 hours on earth—from 6:00 A.M. December 29 to 6:00 A.M. December 30, 1896—he was busy meeting visitors, including Jesuit priests, Josephine Bracken and members of his family, a Spanish newspaper correspondent (Santiago Mataix), some friends, and secretly finishing his farewell poem. As a Christian and a hero-martyr, he was serenely resigned to die for his beloved country, which he called "Pearl of the Orient Sea" in his last poem and "Pearl of the Orient" in an article entitled "Unfortunate Philippines" published in <em>The Hong Kong Telegraph</em> on September 24, 1892.</p>
 <h2>Last Hours of Rizal</h2>
 At 6:00 A.M., December 29, 1896, Captain Rafael Dominguez, who was designated by Governor General Camilo Polavieja to take charge of all arrangements for the execution of the condemned prisoner, read the death sentence to Rizal—to be shot at the back by a firing squad at 7:00 A.M. in Bagumbayan (Luneta).
@@ -1839,7 +1893,8 @@ Rizal, knowing that his rendezvous with destiny was imminent, bade farewell to F
 At the time when the bullets of Spain's firing squad killed Dr. Rizal, the Spaniards—residents, friars (Jesuits not included), corrupt officials (including Governor Polavieja) exulted with sadistic joy, for Rizal, formidable champion of Filipino freedom, was gone. In fact, immediately after the hero's execution the Spanish spectators shouted "Viva España!" "Muerte a los Traidores!" ("Long Live Spain!" "Death to the Traitors!") and the Spanish Military Band, joining the jubilance over Rizal's death, played the gay <em>Marcha de Cadiz</em>.
 <p>Poor bigoted Spaniards of no vision! They were fully unaware of history's inexorable tides. For the execution of Rizal presaged the foundation of an independent nation. True that the Spanish bullets which killed Rizal destroyed his brain, but the libertarian ideas spawned by his brain destroyed the Spanish rule in the Philippines. As Cecilio Apostol, greatest Filipino epic poet in Spanish, aptly rhapsodized:</p>
 <blockquote><p>"Rest in peace in the shadows of oblivion, Redeemer of a country in bondage! In the mystery of the grave, do not cry Need not the momentary triumph of the Spaniard Because if a bullet destroyed your cranium, Likewise your idea destroyed an empire!"</p></blockquote>
-By his writings, which awakened Filipino nationalism and paved the way for the Philippine Revolution, he proved that "the pen is mightier than the sword". As a many-splendored genius, writer, scientist, and political martyr, he richly deserves history's salute as the national hero of the Philippines.</div></div>
+By his writings, which awakened Filipino nationalism and paved the way for the Philippine Revolution, he proved that "the pen is mightier than the sword". As a many-splendored genius, writer, scientist, and political martyr, he richly deserves history's salute as the national hero of the Philippines.</div></div></div>
+<div class="page" data-page="28">
 <div class="colophon">
 <div class="ornament">❦</div>
 <p>Based on "Jose Rizal: Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero"</p>
@@ -1847,10 +1902,98 @@ By his writings, which awakened Filipino nationalism and paved the way for the P
 <p style="margin-top:20px;font-style:italic">A Digital Edition</p>
 </div>
 </div>
+</div>
+<div class="nav-controls">
+<button class="nav-btn" id="prevBtn" onclick="prevPage()">‹</button>
+<span class="page-indicator" id="pageIndicator">1 / 1</span>
+<button class="nav-btn" id="nextBtn" onclick="nextPage()">›</button>
+</div>
 <script>
-function st(t){document.body.setAttribute('data-theme',t);document.querySelectorAll('.theme-dot').forEach(function(d){d.classList.remove('active')});event.target.classList.add('active')}
-var fz=17;function fs(d){fz=Math.max(14,Math.min(22,fz+d));document.getElementById('mc').style.fontSize=fz+'px';document.getElementById('fl').textContent=fz}
-document.querySelectorAll('.toc-item a').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var el=document.getElementById(this.getAttribute('href').substring(1));if(el)el.scrollIntoView({behavior:'smooth',block:'start'})})});
+let currentPage = 0;
+const pages = document.querySelectorAll('.page');
+const totalPages = pages.length;
+let touchStartX = 0;
+let touchEndX = 0;
+
+function updatePage() {
+  pages.forEach((page, idx) => {
+    page.classList.toggle('active', idx === currentPage);
+  });
+  document.getElementById('pageIndicator').textContent = (currentPage + 1) + ' / ' + totalPages;
+  document.getElementById('prevBtn').disabled = currentPage === 0;
+  document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+}
+
+function nextPage() {
+  if (currentPage < totalPages - 1) {
+    currentPage++;
+    updatePage();
+  }
+}
+
+function prevPage() {
+  if (currentPage > 0) {
+    currentPage--;
+    updatePage();
+  }
+}
+
+function goToChapter(id) {
+  const chapterEl = document.getElementById(id);
+  if (chapterEl) {
+    const pageContainer = chapterEl.closest('.page');
+    if (pageContainer) {
+      currentPage = parseInt(pageContainer.getAttribute('data-page'));
+      updatePage();
+    }
+  }
+}
+
+document.querySelectorAll('.toc-item a[data-chapter]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    goToChapter(this.getAttribute('data-chapter'));
+  });
+});
+
+function st(t){
+  document.body.setAttribute('data-theme',t);
+  document.querySelectorAll('.theme-dot').forEach(function(d){d.classList.remove('active')});
+  event.target.classList.add('active');
+}
+
+var fz=17;
+function fs(d){
+  fz=Math.max(14,Math.min(22,fz+d));
+  document.getElementById('mc').style.fontSize=fz+'px';
+  document.getElementById('fl').textContent=fz;
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
+  if (e.key === 'ArrowLeft') prevPage();
+});
+
+// Touch/swipe navigation
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', function(e) {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+});
+
+function handleSwipe() {
+  const diff = touchStartX - touchEndX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) nextPage();
+    else prevPage();
+  }
+}
+
+updatePage();
 </script>
 </body>
 </html>

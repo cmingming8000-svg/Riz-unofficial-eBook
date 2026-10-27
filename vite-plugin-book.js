@@ -94,39 +94,51 @@ export default function rizalBookPlugin() {
         `<li><a href="#${ch.id}" data-target="${ch.id}">${esc(ch.title)}</a></li>`
       ).join('\n');
 
-      const chaptersHtml = chapterData.map(ch =>
-        `<div class="chapter"><h1 class="chapter-title" id="${ch.id}">${esc(ch.title)}</h1><div class="chapter-content">${ch.html}</div></div>`
+      const chaptersHtml = chapterData.map((ch, idx) =>
+        `<div class="page" data-page="${idx + 2}"><div class="chapter"><h1 class="chapter-title" id="${ch.id}">${esc(ch.title)}</h1><div class="chapter-content">${ch.html}</div></div></div>`
       ).join('\n');
 
       const finalHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Jose Rizal: Life, Works, and Writings of a Genius</title>
 <style>
 :root{--bg:#f5f1e8;--text:#2c2416;--paper:#faf8f3;--accent:#6b4423;--accent-light:#8b6234;--border:#d4c5a0;--shadow:rgba(44,36,22,.15)}
 [data-theme="light"]{--bg:#ffffff;--text:#1a1a1a;--paper:#ffffff;--accent:#4a4a4a;--accent-light:#666666;--border:#e0e0e0;--shadow:rgba(0,0,0,.1)}
 [data-theme="dark"]{--bg:#1a1a1a;--text:#e8e8e8;--paper:#2a2a2a;--accent:#c9a882;--accent-light:#d4b896;--border:#3a3a3a;--shadow:rgba(0,0,0,.5)}
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:80px}
+html,body{height:100%;overflow:hidden}
 body{
   font-family:'Palatino Linotype','Book Antiqua',Palatino,'Times New Roman',serif;
   background:var(--bg);
   color:var(--text);
-  line-height:1.8;
   transition:background .4s,color .4s;
   -webkit-font-smoothing:antialiased;
   font-size:17px;
+  display:flex;
+  flex-direction:column;
 }
 .book-container{
+  flex:1;
   max-width:900px;
+  width:100%;
   margin:0 auto;
   background:var(--paper);
-  min-height:100vh;
   box-shadow:0 0 60px var(--shadow);
   position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
 }
+.page{
+  flex:1;
+  padding:60px 80px;
+  overflow-y:auto;
+  display:none;
+}
+.page.active{display:block}
 .controls{
   position:fixed;
   top:20px;
@@ -159,11 +171,52 @@ body{
 }
 .theme-dot:hover{transform:scale(1.1)}
 .theme-dot.active{border:3px solid var(--accent);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--accent)}
-.book-cover{
-  padding:80px 60px;
+.nav-controls{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:15px;
+  align-items:center;
+  background:var(--paper);
+  padding:12px 20px;
+  border-radius:30px;
+  box-shadow:0 4px 20px var(--shadow);
+  border:1px solid var(--border);
+  z-index:1000;
+}
+.nav-btn{
+  background:none;
+  border:2px solid var(--accent);
+  width:40px;height:40px;
+  border-radius:50%;
+  cursor:pointer;
+  color:var(--accent);
+  font-size:18px;
+  font-weight:700;
+  transition:all .2s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.nav-btn:hover{background:var(--accent);color:var(--paper)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.page-indicator{
+  font-size:14px;
+  color:var(--text);
+  min-width:80px;
   text-align:center;
-  border-bottom:3px double var(--accent);
+  font-weight:600;
+}
+.book-cover{
+  text-align:center;
   position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  height:100%;
 }
 .book-cover::before{
   content:'';
@@ -210,8 +263,10 @@ body{
   color:var(--accent);
 }
 .toc-page{
-  padding:60px;
-  border-bottom:1px solid var(--border);
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 .toc-title{
   font-size:2em;
@@ -239,20 +294,13 @@ body{
   align-items:baseline;
   transition:color .2s;
   font-size:1.05em;
+  cursor:pointer;
 }
 .toc-item a:hover{color:var(--accent)}
-.toc-item .chapter-num{
-  font-weight:600;
-  margin-right:10px;
-  color:var(--accent);
-}
 .chapter{
-  padding:80px 60px;
-  page-break-before:always;
-  position:relative;
-}
-.chapter:not(:last-child){
-  border-bottom:1px solid var(--border);
+  height:100%;
+  display:flex;
+  flex-direction:column;
 }
 .chapter-title{
   font-size:2.2em;
@@ -263,7 +311,6 @@ body{
   line-height:1.3;
   font-variant:small-caps;
   letter-spacing:.05em;
-  scroll-margin-top:80px;
 }
 .chapter-title::after{
   content:'❦';
@@ -277,6 +324,8 @@ body{
   hyphens:auto;
   line-height:1.9;
   font-size:1.05em;
+  flex:1;
+  overflow-y:auto;
 }
 .chapter-content p{
   margin-bottom:1.4em;
@@ -360,34 +409,35 @@ body{
   margin:3em 0;
   opacity:.3;
 }
-.page-break{
-  text-align:center;
-  margin:60px 0;
-  font-size:1.5em;
-  opacity:.3;
-  color:var(--accent);
-}
 .colophon{
-  padding:60px;
   text-align:center;
-  border-top:3px double var(--accent);
   font-size:.9em;
   opacity:.6;
   line-height:1.8;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  height:100%;
 }
 @media(max-width:768px){
   .book-container{box-shadow:none}
-  .book-cover,.toc-page,.chapter{padding:40px 30px}
+  .page{padding:30px 20px}
   .book-title{font-size:2em}
-  .chapter-title{font-size:1.6em}
-  .controls{top:10px;right:10px;padding:8px 12px}
+  .chapter-title{font-size:1.6em;margin-bottom:30px}
+  .controls{top:10px;right:10px;padding:8px 12px;gap:6px}
   .ctrl-btn{padding:5px 10px;font-size:12px}
   .theme-dot{width:20px;height:20px}
+  .nav-controls{bottom:10px;padding:10px 15px;gap:10px}
+  .nav-btn{width:36px;height:36px;font-size:16px}
+  .page-indicator{font-size:12px;min-width:60px}
+  .book-cover::before{top:20px;left:20px;right:20px;bottom:20px}
+  .chapter-content{font-size:1em;line-height:1.8}
 }
 @media print{
-  .controls{display:none}
+  .controls,.nav-controls{display:none}
   .book-container{box-shadow:none;max-width:100%}
-  .chapter{page-break-before:always}
+  .page{display:block!important;page-break-after:always}
 }
 .ch>.cb>p:first-of-type::first-letter{font-size:3.2em;float:left;line-height:.8;margin-right:.08em;margin-top:.07em;font-weight:700;color:var(--accent)}
 .cb blockquote{border-left:3px solid var(--accent);margin:1.5em 0;padding:.8em 1.2em;font-style:italic;opacity:.85;background:var(--accent-bg);border-radius:0 8px 8px 0}
@@ -418,6 +468,7 @@ body{
 <button class="theme-dot" style="background:#1a1a1a" onclick="st('dark')" title="Dark"></button>
 </div>
 <div class="book-container" id="mc">
+<div class="page active" data-page="0">
 <div class="book-cover">
 <div class="book-title">Jose Rizal</div>
 <div class="book-subtitle">Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero</div>
@@ -425,11 +476,15 @@ body{
 <div class="book-author">Gregorio F. Zaide &amp; Sonia M. Zaide</div>
 <div class="book-edition">Second Edition</div>
 </div>
+</div>
+<div class="page" data-page="1">
 <div class="toc-page">
 <div class="toc-title">Contents</div>
-<ol class="toc-list">${tocHtml.replace(/<li><a href="#([^"]+)" data-target="[^"]+">([^<]+)<\/a><\/li>/g, '<li class="toc-item"><a href="#$1">$2</a></li>')}</ol>
+<ol class="toc-list">${tocHtml.replace(/<li><a href="#([^"]+)" data-target="[^"]+">([^<]+)<\/a><\/li>/g, (match, id, title) => '<li class="toc-item"><a data-chapter="'+id+'">'+title+'</a></li>')}</ol>
+</div>
 </div>
 ${chaptersHtml}
+<div class="page" data-page="${chapterData.length + 2}">
 <div class="colophon">
 <div class="ornament">❦</div>
 <p>Based on "Jose Rizal: Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero"</p>
@@ -437,10 +492,98 @@ ${chaptersHtml}
 <p style="margin-top:20px;font-style:italic">A Digital Edition</p>
 </div>
 </div>
+</div>
+<div class="nav-controls">
+<button class="nav-btn" id="prevBtn" onclick="prevPage()">‹</button>
+<span class="page-indicator" id="pageIndicator">1 / 1</span>
+<button class="nav-btn" id="nextBtn" onclick="nextPage()">›</button>
+</div>
 <script>
-function st(t){document.body.setAttribute('data-theme',t);document.querySelectorAll('.theme-dot').forEach(function(d){d.classList.remove('active')});event.target.classList.add('active')}
-var fz=17;function fs(d){fz=Math.max(14,Math.min(22,fz+d));document.getElementById('mc').style.fontSize=fz+'px';document.getElementById('fl').textContent=fz}
-document.querySelectorAll('.toc-item a').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var el=document.getElementById(this.getAttribute('href').substring(1));if(el)el.scrollIntoView({behavior:'smooth',block:'start'})})});
+let currentPage = 0;
+const pages = document.querySelectorAll('.page');
+const totalPages = pages.length;
+let touchStartX = 0;
+let touchEndX = 0;
+
+function updatePage() {
+  pages.forEach((page, idx) => {
+    page.classList.toggle('active', idx === currentPage);
+  });
+  document.getElementById('pageIndicator').textContent = (currentPage + 1) + ' / ' + totalPages;
+  document.getElementById('prevBtn').disabled = currentPage === 0;
+  document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+}
+
+function nextPage() {
+  if (currentPage < totalPages - 1) {
+    currentPage++;
+    updatePage();
+  }
+}
+
+function prevPage() {
+  if (currentPage > 0) {
+    currentPage--;
+    updatePage();
+  }
+}
+
+function goToChapter(id) {
+  const chapterEl = document.getElementById(id);
+  if (chapterEl) {
+    const pageContainer = chapterEl.closest('.page');
+    if (pageContainer) {
+      currentPage = parseInt(pageContainer.getAttribute('data-page'));
+      updatePage();
+    }
+  }
+}
+
+document.querySelectorAll('.toc-item a[data-chapter]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    goToChapter(this.getAttribute('data-chapter'));
+  });
+});
+
+function st(t){
+  document.body.setAttribute('data-theme',t);
+  document.querySelectorAll('.theme-dot').forEach(function(d){d.classList.remove('active')});
+  event.target.classList.add('active');
+}
+
+var fz=17;
+function fs(d){
+  fz=Math.max(14,Math.min(22,fz+d));
+  document.getElementById('mc').style.fontSize=fz+'px';
+  document.getElementById('fl').textContent=fz;
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
+  if (e.key === 'ArrowLeft') prevPage();
+});
+
+// Touch/swipe navigation
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', function(e) {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+});
+
+function handleSwipe() {
+  const diff = touchStartX - touchEndX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) nextPage();
+    else prevPage();
+  }
+}
+
+updatePage();
 </script>
 </body>
 </html>`;
