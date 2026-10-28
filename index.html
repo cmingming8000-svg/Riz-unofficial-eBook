@@ -1940,7 +1940,7 @@ function performKeywordSearch(query) {
     searchResults.innerHTML = '<div class="search-result">No results found</div>';
   } else {
     searchResults.innerHTML = results.slice(0, 10).map(r =>
-      '<div class="search-result" onclick="jumpToChapter(&#39;' + r.chapterId + '&#39;)">' +
+      '<div class="search-result" onclick="jumpToChapter(&apos;' + r.chapterId + '&apos;)">' +
       '<div class="chapter">' + r.title + '</div>' +
       '<div class="snippet">' + r.snippet + '</div>' +
       '</div>'
@@ -1988,7 +1988,7 @@ async function performAISearch(query, apiKey) {
       result.chapters.forEach(chTitle => {
         const section = Array.from(sections).find(s => s.dataset.title.includes(chTitle));
         if (section) {
-          html += '<div style="margin-top:5px;padding:5px;background:var(--accent-bg);border-radius:4px;cursor:pointer" onclick="jumpToChapter(&#39;' + section.id + '&#39;)">' + section.dataset.title + '</div>';
+          html += '<div style="margin-top:5px;padding:5px;background:var(--accent-bg);border-radius:4px;cursor:pointer" onclick="jumpToChapter(&apos;' + section.id + '&apos;)">' + section.dataset.title + '</div>';
         }
       });
     }
@@ -2032,7 +2032,7 @@ function addChatMessage(role, content, citations = [], sourcePassages = []) {
   // Add citations if provided
   if (citations.length > 0) {
     html += '<span class="citation">Sources: ';
-    html += citations.map(function(c) { return '<a href="#' + c.id + '" onclick="event.preventDefault(); jumpToChapter(&#39;' + c.id + '&#39;);">' + c.title + '</a>'; }).join(', ');
+    html += citations.map(function(c) { return '<a href="#' + c.id + '" onclick="event.preventDefault(); jumpToChapter(&apos;' + c.id + '&apos;);">' + c.title + '</a>'; }).join(', ');
     html += '</span>';
   }
   
@@ -2041,7 +2041,7 @@ function addChatMessage(role, content, citations = [], sourcePassages = []) {
     const messageId = 'msg-' + (++chatMessageCounter);
     chatMessagePassages[messageId] = sourcePassages;
     html += '<div class="actions">';
-    html += '<button class="action-btn" onclick="showSourceInBook(&#39;' + messageId + '&#39;)">Show in Book</button>';
+    html += '<button class="action-btn" onclick="showSourceInBook(&apos;' + messageId + '&apos;)">Show in Book</button>';
     html += '</div>';
   }
   
@@ -2417,8 +2417,8 @@ function renderNotes() {
   list.innerHTML = notes.map(n => {
     const section = document.getElementById(n.chapterId);
     const chapterTitle = section ? section.dataset.title : 'Unknown';
-    return '<div class="note-item" onclick="jumpToChapter(&#39;' + n.chapterId + '&#39;)">' +
-      '<span class="delete" onclick="event.stopPropagation();deleteNote(&#39;' + n.id + '&#39;)">×</span>' +
+    return '<div class="note-item" onclick="jumpToChapter(&apos;' + n.chapterId + '&apos;)">' +
+      '<span class="delete" onclick="event.stopPropagation();deleteNote(&apos;' + n.id + '&apos;)">×</span>' +
       '<div style="font-weight:700;color:var(--accent);font-size:11px;margin-bottom:4px">' + chapterTitle + '</div>' +
       '<div style="font-style:italic;opacity:.7;margin-bottom:4px">"' + n.selection.substring(0, 50) + '..."</div>' +
       '<div>' + n.text + '</div>' +
@@ -2464,8 +2464,8 @@ function renderBookmarks() {
   }
   
   list.innerHTML = bookmarks.map(b =>
-    '<div class="bookmark-item" onclick="jumpToChapter(&#39;' + b.chapterId + '&#39;)">' +
-    '<span class="delete" onclick="event.stopPropagation();deleteBookmark(&#39;' + b.id + '&#39;)">×</span>' +
+    '<div class="bookmark-item" onclick="jumpToChapter(&apos;' + b.chapterId + '&apos;)">' +
+    '<span class="delete" onclick="event.stopPropagation();deleteBookmark(&apos;' + b.id + '&apos;)">×</span>' +
     '<div>' + b.title + '</div>' +
     '</div>'
   ).join('');
