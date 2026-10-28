@@ -50,6 +50,12 @@ body{
   transform-origin:left center;
   transition:transform .5s ease,opacity .3s ease;
   background:var(--paper);
+  display:flex;
+  flex-direction:column;
+}
+.page-content{
+  flex:1;
+  overflow:hidden;
 }
 .page.active{
   opacity:1;
@@ -226,22 +232,22 @@ body{
 }
 .toc-list{
   list-style:none;
-  max-width:550px;
+  max-width:700px;
   margin:0 auto;
-  max-height:calc(100vh - 200px);
-  overflow-y:auto;
-  padding-right:10px;
+  columns:2;
+  column-gap:40px;
 }
 .toc-item{
   margin-bottom:10px;
   padding:6px 0;
   border-bottom:1px dotted var(--border);
+  break-inside:avoid;
 }
 .toc-item a{
   color:var(--text);
   text-decoration:none;
   transition:color .2s;
-  font-size:1em;
+  font-size:0.95em;
   cursor:pointer;
   display:block;
 }
@@ -1952,27 +1958,22 @@ function paginateContent() {
   const content = document.getElementById('book-content');
   const container = document.getElementById('pages-container');
   
-  // Make content visible temporarily for measurement
-  content.style.display = 'block';
-  content.style.position = 'absolute';
-  content.style.visibility = 'hidden';
-  content.style.width = '740px';
+  // Calculate available page height (viewport minus padding)
+  const pageHeight = window.innerHeight - 160;
+  const pageWidth = Math.min(740, window.innerWidth - 80);
   
-  const pageHeight = window.innerHeight - 140;
-  
-  // Get all major content blocks
+  // Get all content sections
   const cover = content.querySelector('.book-cover');
   const toc = content.querySelector('.toc-page');
   const chapters = Array.from(content.querySelectorAll('.chapter'));
   const colophon = content.querySelector('.colophon');
   
-  // Create pages array
   const allPages = [];
   
-  // Add cover page
+  // Add cover
   allPages.push({type: 'cover', html: cover.outerHTML});
   
-  // Add TOC page
+  // Add TOC
   allPages.push({type: 'toc', html: toc.outerHTML});
   
   // Process each chapter
@@ -1981,17 +1982,17 @@ function paginateContent() {
     const title = chapter.querySelector('.chapter-title');
     const contentDiv = chapter.querySelector('.chapter-content');
     
-    // Create measurement container
+    // Create hidden measurement div
     const measureDiv = document.createElement('div');
-    measureDiv.style.cssText = 'position:absolute;visibility:hidden;width:740px;padding:0;font-family:inherit;font-size:inherit;line-height:inherit;';
+    measureDiv.style.cssText = 'position:absolute;visibility:hidden;width:' + pageWidth + 'px;left:-9999px;top:0;';
     document.body.appendChild(measureDiv);
     
-    // Measure title
+    // Measure title height
     const titleClone = title.cloneNode(true);
     measureDiv.appendChild(titleClone);
-    let titleHeight = titleClone.offsetHeight + 40; // Add margin
+    const titleHeight = titleClone.offsetHeight + 50;
     
-    // Get all content elements
+    // Split chapter content into pages
     const elements = Array.from(contentDiv.children);
     let currentPageElements = [];
     let currentHeight = titleHeight;
@@ -2000,8 +2001,9 @@ function paginateContent() {
     elements.forEach((el) => {
       const clone = el.cloneNode(true);
       measureDiv.appendChild(clone);
-      const elHeight = clone.offsetHeight + 20; // Add spacing
+      const elHeight = clone.offsetHeight + 25;
       
+      // Check if we need a new page
       if (currentHeight + elHeight > pageHeight && currentPageElements.length > 0) {
         // Save current page
         const pageHtml = currentPageElements.map(e => e.outerHTML).join('');
@@ -2014,15 +2016,15 @@ function paginateContent() {
         });
         isFirstPage = false;
         
-        // Start new page
+        // Reset for new page
         currentPageElements = [];
         currentHeight = 0;
         measureDiv.innerHTML = '';
         
-        // Re-add element
+        // Add current element to new page
         const newClone = el.cloneNode(true);
         measureDiv.appendChild(newClone);
-        currentHeight = newClone.offsetHeight + 20;
+        currentHeight = newClone.offsetHeight + 25;
       } else {
         currentHeight += elHeight;
       }
@@ -2030,7 +2032,7 @@ function paginateContent() {
       currentPageElements.push(clone);
     });
     
-    // Add remaining content
+    // Add final page of chapter
     if (currentPageElements.length > 0) {
       const pageHtml = currentPageElements.map(e => e.outerHTML).join('');
       allPages.push({
@@ -2045,22 +2047,16 @@ function paginateContent() {
     measureDiv.remove();
   });
   
-  // Add colophon page
+  // Add colophon
   allPages.push({type: 'colophon', html: colophon.outerHTML});
   
-  // Build chapter page map
+  // Build chapter-to-page mapping
   chapterPageMap = {};
   allPages.forEach((page, idx) => {
     if (page.type === 'chapter' && page.chapterId && !chapterPageMap[page.chapterId]) {
       chapterPageMap[page.chapterId] = idx;
     }
   });
-  
-  // Hide content again
-  content.style.display = 'none';
-  content.style.position = '';
-  content.style.visibility = '';
-  content.style.width = '';
   
   // Create page elements
   container.innerHTML = '';
@@ -2081,7 +2077,7 @@ function paginateContent() {
   }
   updatePageIndicator();
   
-  // Attach TOC handlers after pages are created
+  // Attach TOC handlers
   attachTocHandlers();
 }
 
