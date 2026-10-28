@@ -192,7 +192,26 @@ mark.orange{background:#ffcc80}
 .highlight-color.pink{background:#f48fb1}
 .highlight-color.orange{background:#ffcc80}
 .empty-state{text-align:center;padding:20px;opacity:.5;font-size:13px;font-style:italic}
-@media(max-width:768px){.sidebar{display:none}.main{padding:20px}.cover h1{font-size:1.8em}.chapter-title{font-size:1.5em}.header{padding:8px 12px}.header h1{font-size:16px}.controls{gap:5px}.ctrl-btn{padding:4px 8px;font-size:11px}.theme-dot{width:18px;height:18px}}
+.chat-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.chat-modal.active{display:flex}
+.chat-container{background:var(--sidebar);border:1px solid var(--border);border-radius:8px;width:90%;max-width:600px;height:80vh;display:flex;flex-direction:column}
+.chat-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.chat-header h2{font-size:18px;color:var(--accent);margin:0}
+.chat-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text);line-height:1}
+.chat-messages{flex:1;overflow-y:auto;padding:20px}
+.chat-message{margin-bottom:15px;padding:12px 15px;border-radius:8px;max-width:85%}
+.chat-message.user{background:var(--accent);color:var(--sidebar);margin-left:auto;border-bottom-right-radius:2px}
+.chat-message.assistant{background:var(--bg);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:2px}
+.chat-message .citation{display:block;margin-top:8px;font-size:11px;opacity:.7;font-style:italic}
+.chat-message .citation a{color:var(--accent);text-decoration:none}
+.chat-message .citation a:hover{text-decoration:underline}
+.chat-input-area{padding:15px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
+.chat-input-area textarea{flex:1;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;resize:none;min-height:40px;max-height:100px}
+.chat-input-area button{padding:10px 20px;background:var(--accent);color:var(--sidebar);border:none;border-radius:6px;cursor:pointer;font-weight:600;transition:opacity .2s}
+.chat-input-area button:hover{opacity:.9}
+.chat-input-area button:disabled{opacity:.5;cursor:not-allowed}
+.chat-disclaimer{padding:10px 20px;background:var(--accent-bg);font-size:11px;text-align:center;color:var(--text);opacity:.8}
+@media(max-width:768px){.sidebar{display:none}.main{padding:20px}.cover h1{font-size:1.8em}.chapter-title{font-size:1.5em}.header{padding:8px 12px}.header h1{font-size:16px}.controls{gap:5px}.ctrl-btn{padding:4px 8px;font-size:11px}.theme-dot{width:18px;height:18px}.chat-container{width:95%;height:90vh}}
 </style>
 </head>
 <body data-theme="sepia">
@@ -213,6 +232,7 @@ mark.orange{background:#ffcc80}
 <button class="theme-dot" style="background:#fff" onclick="st('light')" title="Light"></button>
 <button class="theme-dot active" style="background:#faf6ed" onclick="st('sepia')" title="Sepia"></button>
 <button class="theme-dot" style="background:#1a1a2e" onclick="st('dark')" title="Dark"></button>
+<button class="ctrl-btn" onclick="openChat()">💬 Chat</button>
 <button class="ctrl-btn" onclick="openSettings()">⚙️</button>
 <button class="ctrl-btn" onclick="exportData()">📤</button>
 <button class="ctrl-btn" onclick="document.getElementById('importFile').click()">📥</button>
@@ -277,6 +297,24 @@ ${chaptersHtml}
 <div class="modal-buttons">
 <button class="ctrl-btn" onclick="closeNoteModal()">Cancel</button>
 <button class="ctrl-btn" onclick="saveNote()">Save</button>
+</div>
+</div>
+</div>
+<div class="chat-modal" id="chatModal">
+<div class="chat-container">
+<div class="chat-header">
+<h2>📖 Book Chat</h2>
+<button class="chat-close" onclick="closeChat()">&times;</button>
+</div>
+<div class="chat-disclaimer">Answers are based ONLY on the book content. Ask questions about Jose Rizal's life, works, and writings.</div>
+<div class="chat-messages" id="chatMessages">
+<div class="chat-message assistant">
+Hello! I'm here to help you learn about Jose Rizal based on this book. Ask me anything about his life, works, or the historical context. All my answers come directly from the book content.
+</div>
+</div>
+<div class="chat-input-area">
+<textarea id="chatInput" placeholder="Ask a question about the book..." rows="2"></textarea>
+<button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
 </div>
 </div>
 </div>
@@ -533,6 +571,156 @@ function jumpToChapter(id) {
   searchResults.style.display = 'none';
   searchInput.value = '';
 }
+
+// Chat functionality
+let chatHistory = [];
+
+function openChat() {
+  document.getElementById('chatModal').classList.add('active');
+  document.getElementById('chatInput').focus();
+}
+
+function closeChat() {
+  document.getElementById('chatModal').classList.remove('active');
+}
+
+function addChatMessage(role, content, citations = []) {
+  const messagesDiv = document.getElementById('chatMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'chat-message ' + role;
+  
+  let html = content;
+  
+  // Add citations if provided
+  if (citations.length > 0) {
+    html += '<span class="citation">Sources: ';
+    html += citations.map(c => '<a href="#' + c.id + '" onclick="jumpToChapter(\'' + c.id + '\'); closeChat();">' + c.title + '</a>').join(', ');
+    html += '</span>';
+  }
+  
+  messageDiv.innerHTML = html;
+  messagesDiv.appendChild(messageDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('chatSendBtn');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  const apiKey = localStorage.getItem('geminiApiKey');
+  if (!apiKey) {
+    alert('Please add your Gemini API key in settings (⚙️) to use the chat feature.');
+    openSettings();
+    return;
+  }
+  
+  // Add user message to UI
+  addChatMessage('user', message);
+  input.value = '';
+  sendBtn.disabled = true;
+  sendBtn.textContent = 'Thinking...';
+  
+  // Build conversation history
+  chatHistory.push({ role: 'user', content: message });
+  
+  try {
+    // Build book context - include all chapter content
+    const bookContext = Array.from(document.querySelectorAll('section[id]')).map(section => {
+      const title = section.dataset.title;
+      const content = section.querySelector('.chapter-content').textContent;
+      return '=== ' + title + ' ===\n' + content;
+    }).join('\n\n');
+    
+    // System prompt - STRICT book-only instruction
+    const systemPrompt = 'You are a helpful assistant that answers questions about Jose Rizal based ONLY on the book content provided below.\n\n' +
+      'CRITICAL RULES:\n' +
+      '1. You must ONLY use information from the book content provided\n' +
+      '2. If the answer is not in the book, say "I don\'t have information about that in this book"\n' +
+      '3. Always cite which chapter(s) your answer comes from\n' +
+      '4. Do not use any external knowledge or make assumptions\n' +
+      '5. Be concise but thorough\n' +
+      '6. Format your response clearly with chapter citations at the end\n\n' +
+      'BOOK CONTENT:\n' +
+      bookContext + '\n\n' +
+      'Respond to the user\'s question using ONLY the information from the book above.';
+    
+    // Prepare messages for API
+    const messages = [
+      { role: 'user', parts: [{ text: systemPrompt + '\n\nUser question: ' + chatHistory[0].content }] }
+    ];
+    
+    // Add conversation history (last 5 exchanges to keep context manageable)
+    if (chatHistory.length > 1) {
+      const recentHistory = chatHistory.slice(-10);
+      let contextMsg = 'Previous conversation:\n';
+      recentHistory.forEach(msg => {
+        contextMsg += (msg.role === 'user' ? 'User: ' : 'Assistant: ') + msg.content + '\n';
+      });
+      contextMsg += '\nCurrent question: ' + message;
+      messages[0].parts[0].text = systemPrompt + '\n\n' + contextMsg;
+    }
+    
+    // Call Gemini API
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: messages,
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 1000
+        }
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+    
+    if (!data.candidates || !data.candidates[0]) {
+      throw new Error('No response from AI');
+    }
+    
+    const aiResponse = data.candidates[0].content.parts[0].text;
+    
+    // Extract citations from response
+    const citations = [];
+    const sections = document.querySelectorAll('section[id]');
+    sections.forEach(section => {
+      const title = section.dataset.title;
+      if (aiResponse.toLowerCase().includes(title.toLowerCase()) || 
+          aiResponse.toLowerCase().includes(title.split(':')[0].toLowerCase())) {
+        citations.push({ id: section.id, title: title });
+      }
+    });
+    
+    // Add AI response to UI
+    addChatMessage('assistant', aiResponse, citations);
+    
+    // Add to history
+    chatHistory.push({ role: 'assistant', content: aiResponse });
+    
+  } catch (error) {
+    addChatMessage('assistant', 'Sorry, I encountered an error: ' + error.message + '\n\nPlease check your API key in settings and try again.');
+    console.error('Chat error:', error);
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send';
+  }
+}
+
+// Handle Enter key in chat input
+document.getElementById('chatInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+});
 
 // Highlighting
 document.addEventListener('mouseup', function(e) {
