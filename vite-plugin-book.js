@@ -124,6 +124,7 @@ body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(
 .toc li{margin-bottom:8px}
 .toc a{display:block;padding:8px 12px;text-decoration:none;color:var(--text);font-size:14px;line-height:1.4;border-radius:6px;transition:all .2s}
 .toc a:hover{background:var(--accent-bg);color:var(--accent)}
+.toc a.active{background:var(--accent-bg);color:var(--accent);font-weight:700;border-left:3px solid var(--accent)}
 .main{flex:1;max-width:800px;margin:0 auto;padding:40px 60px}
 .cover{text-align:center;padding:60px 0;border-bottom:3px double var(--accent);margin-bottom:60px}
 .cover h1{font-size:2.5em;font-weight:700;margin-bottom:20px;color:var(--accent);font-variant:small-caps}
@@ -180,6 +181,24 @@ ${chaptersHtml}
 <script>
 function st(t){document.body.setAttribute('data-theme',t);document.querySelectorAll('.theme-dot').forEach(function(d){d.classList.remove('active')});event.target.classList.add('active')}
 var fz=17;function fs(d){fz=Math.max(14,Math.min(22,fz+d));document.querySelector('.main').style.fontSize=fz+'px';document.getElementById('fl').textContent=fz}
+
+// Track current chapter in TOC
+const sections = document.querySelectorAll('section[id]');
+const tocLinks = document.querySelectorAll('.toc a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.getAttribute('id');
+      tocLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + id) {
+          link.classList.add('active');
+        }
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(section => observer.observe(section));
 </script>
 </body>
 </html>`;
