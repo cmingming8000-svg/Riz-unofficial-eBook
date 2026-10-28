@@ -88,7 +88,7 @@ export default function rizalBookPlugin() {
           chapterData.push({ id: ch.id, title: ch.title, html: '<p>Failed to load.</p>' });
         }
       }
-      console.log(`📖 Building single HTML file with ${chapterData.length} chapters...`);
+      console.log(`Building single HTML file with ${chapterData.length} chapters...`);
 
       const tocHtml = chapterData.map(ch =>
         `<li><a href="#${ch.id}">${esc(ch.title)}</a></li>`
@@ -245,10 +245,10 @@ mark.ai-highlight{background:#ffd54f;outline:2px solid #ff9800;outline-offset:2p
 <button class="theme-dot" style="background:#fff" onclick="st('light')" title="Light"></button>
 <button class="theme-dot active" style="background:#faf6ed" onclick="st('sepia')" title="Sepia"></button>
 <button class="theme-dot" style="background:#1a1a2e" onclick="st('dark')" title="Dark"></button>
-<button class="ctrl-btn" onclick="openChat()">💬 Chat</button>
-<button class="ctrl-btn" onclick="openSettings()">⚙️</button>
-<button class="ctrl-btn" onclick="exportData()">📤</button>
-<button class="ctrl-btn" onclick="document.getElementById('importFile').click()">📥</button>
+<button class="ctrl-btn" onclick="openChat()">Chat</button>
+<button class="ctrl-btn" onclick="openSettings()">Settings</button>
+<button class="ctrl-btn" onclick="exportData()">Export</button>
+<button class="ctrl-btn" onclick="document.getElementById('importFile').click()">Import</button>
 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
 </div>
 </div>
@@ -256,8 +256,8 @@ mark.ai-highlight{background:#ffd54f;outline:2px solid #ff9800;outline-offset:2p
 <aside class="sidebar">
 <div class="sidebar-tabs">
 <button class="sidebar-tab active" onclick="switchTab('toc')">Contents</button>
-<button class="sidebar-tab" onclick="switchTab('bookmarks')">🔖</button>
-<button class="sidebar-tab" onclick="switchTab('notes')">📝</button>
+<button class="sidebar-tab" onclick="switchTab('bookmarks')">Bookmarks</button>
+<button class="sidebar-tab" onclick="switchTab('notes')">Notes</button>
 </div>
 <div class="sidebar-panel active" id="tocPanel">
 <ol class="toc">${tocHtml}</ol>
@@ -289,7 +289,7 @@ ${chaptersHtml}
 <div class="highlight-color blue" onclick="highlightSelection('blue')"></div>
 <div class="highlight-color pink" onclick="highlightSelection('pink')"></div>
 <div class="highlight-color orange" onclick="highlightSelection('orange')"></div>
-<div class="highlight-color" style="background:#999" onclick="addNoteToSelection()">📝</div>
+<div class="highlight-color" style="background:#999;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold" onclick="addNoteToSelection()">N</div>
 </div>
 <div class="modal" id="settingsModal">
 <div class="modal-content">
@@ -316,7 +316,7 @@ ${chaptersHtml}
 <div class="chat-modal" id="chatModal">
 <div class="chat-container">
 <div class="chat-header">
-<h2>📖 Book Chat</h2>
+<h2>Book Chat</h2>
 <button class="chat-close" onclick="closeChat()">&times;</button>
 </div>
 <div class="chat-disclaimer">Answers are based ONLY on the book content. Ask questions about Jose Rizal's life, works, and writings.</div>
@@ -332,7 +332,7 @@ Hello! I'm here to help you learn about Jose Rizal based on this book. Ask me an
 </div>
 </div>
 <div class="ai-highlights-indicator" id="aiHighlightsIndicator">
-<h4>📍 AI Source Highlights</h4>
+<h4>AI Source Highlights</h4>
 <p>The AI has highlighted where it found this information in the book.</p>
 <div class="indicator-buttons">
 <button class="indicator-btn" onclick="dismissAIHighlights()">Dismiss</button>
@@ -606,6 +606,8 @@ function closeChat() {
 }
 
 let aiHighlightElements = [];
+let chatMessagePassages = {};
+let chatMessageCounter = 0;
 
 function addChatMessage(role, content, citations = [], sourcePassages = []) {
   const messagesDiv = document.getElementById('chatMessages');
@@ -623,8 +625,10 @@ function addChatMessage(role, content, citations = [], sourcePassages = []) {
   
   // Add action buttons for AI messages
   if (role === 'assistant' && sourcePassages.length > 0) {
+    const messageId = 'msg-' + (++chatMessageCounter);
+    chatMessagePassages[messageId] = sourcePassages;
     html += '<div class="actions">';
-    html += '<button class="action-btn" onclick="showSourceInBook(' + JSON.stringify(sourcePassages).replace(/"/g, '&quot;') + ')">📍 Show in Book</button>';
+    html += '<button class="action-btn" onclick="showSourceInBook(&#39;' + messageId + '&#39;)">Show in Book</button>';
     html += '</div>';
   }
   
@@ -633,7 +637,10 @@ function addChatMessage(role, content, citations = [], sourcePassages = []) {
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-function showSourceInBook(passages) {
+function showSourceInBook(messageId) {
+  const passages = chatMessagePassages[messageId];
+  if (!passages) return;
+  
   // Clear previous AI highlights
   dismissAIHighlights();
   
@@ -735,7 +742,7 @@ async function sendChatMessage() {
   
   const apiKey = localStorage.getItem('geminiApiKey');
   if (!apiKey) {
-    alert('Please add your Gemini API key in settings (⚙️) to use the chat feature.');
+    alert('Please add your Gemini API key in Settings to use the chat feature.');
     openSettings();
     return;
   }
@@ -964,7 +971,7 @@ function saveNote() {
 function renderNotes() {
   const list = document.getElementById('notesList');
   if (notes.length === 0) {
-    list.innerHTML = '<div class="empty-state">No notes yet. Select text and click 📝 to add a note.</div>';
+    list.innerHTML = '<div class="empty-state">No notes yet. Select text and click the "N" button to add a note.</div>';
     return;
   }
   
@@ -972,7 +979,7 @@ function renderNotes() {
     const section = document.getElementById(n.chapterId);
     const chapterTitle = section ? section.dataset.title : 'Unknown';
     return '<div class="note-item" onclick="jumpToChapter(\\'' + n.chapterId + '\\')">' +
-      '<span class="delete" onclick="event.stopPropagation();deleteNote(\\'' + n.id + '\\')">✕</span>' +
+      '<span class="delete" onclick="event.stopPropagation();deleteNote(\\'' + n.id + '\\')">×</span>' +
       '<div style="font-weight:700;color:var(--accent);font-size:11px;margin-bottom:4px">' + chapterTitle + '</div>' +
       '<div style="font-style:italic;opacity:.7;margin-bottom:4px">"' + n.selection.substring(0, 50) + '..."</div>' +
       '<div>' + n.text + '</div>' +
@@ -1013,13 +1020,13 @@ function addBookmark() {
 function renderBookmarks() {
   const list = document.getElementById('bookmarksList');
   if (bookmarks.length === 0) {
-    list.innerHTML = '<div class="empty-state">No bookmarks yet. Click 🔖 while reading to bookmark a chapter.</div>';
+    list.innerHTML = '<div class="empty-state">No bookmarks yet. Press Ctrl+D while reading to bookmark a chapter.</div>';
     return;
   }
   
   list.innerHTML = bookmarks.map(b =>
     '<div class="bookmark-item" onclick="jumpToChapter(\\'' + b.chapterId + '\\')">' +
-    '<span class="delete" onclick="event.stopPropagation();deleteBookmark(\\'' + b.id + '\\')">✕</span>' +
+    '<span class="delete" onclick="event.stopPropagation();deleteBookmark(\\'' + b.id + '\\')">×</span>' +
     '<div>' + b.title + '</div>' +
     '</div>'
   ).join('');
