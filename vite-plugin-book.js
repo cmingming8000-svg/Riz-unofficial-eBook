@@ -242,9 +242,9 @@ mark.ai-highlight{background:#ffd54f;outline:2px solid #ff9800;outline-offset:2p
 <button class="ctrl-btn" onclick="fs(-2)">A-</button>
 <span id="fl" style="min-width:25px;text-align:center;font-size:12px">17</span>
 <button class="ctrl-btn" onclick="fs(2)">A+</button>
-<button class="theme-dot" style="background:#fff" onclick="st('light')" title="Light"></button>
-<button class="theme-dot active" style="background:#faf6ed" onclick="st('sepia')" title="Sepia"></button>
-<button class="theme-dot" style="background:#1a1a2e" onclick="st('dark')" title="Dark"></button>
+<button class="theme-dot" data-theme="light" style="background:#fff" onclick="st('light')" title="Light"></button>
+<button class="theme-dot active" data-theme="sepia" style="background:#faf6ed" onclick="st('sepia')" title="Sepia"></button>
+<button class="theme-dot" data-theme="dark" style="background:#1a1a2e" onclick="st('dark')" title="Dark"></button>
 <button class="ctrl-btn" onclick="openChat()">Chat</button>
 <button class="ctrl-btn" onclick="openSettings()">Settings</button>
 <button class="ctrl-btn" onclick="exportData()">Export</button>
@@ -255,9 +255,9 @@ mark.ai-highlight{background:#ffd54f;outline:2px solid #ff9800;outline-offset:2p
 <div class="layout">
 <aside class="sidebar">
 <div class="sidebar-tabs">
-<button class="sidebar-tab active" onclick="switchTab('toc')">Contents</button>
-<button class="sidebar-tab" onclick="switchTab('bookmarks')">Bookmarks</button>
-<button class="sidebar-tab" onclick="switchTab('notes')">Notes</button>
+<button class="sidebar-tab active" data-tab="toc" onclick="switchTab('toc')">Contents</button>
+<button class="sidebar-tab" data-tab="bookmarks" onclick="switchTab('bookmarks')">Bookmarks</button>
+<button class="sidebar-tab" data-tab="notes" onclick="switchTab('notes')">Notes</button>
 </div>
 <div class="sidebar-panel active" id="tocPanel">
 <ol class="toc">${tocHtml}</ol>
@@ -351,8 +351,9 @@ let currentNoteSelection = null;
 // Initialize preferences
 if (preferences.theme) {
   document.body.setAttribute('data-theme', preferences.theme);
-  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
-  document.querySelector('[onclick="st(\\''+preferences.theme+'\\')"]').classList.add('active');
+  document.querySelectorAll('.theme-dot').forEach(function(d) { d.classList.remove('active'); });
+  var savedBtn = document.querySelector('.theme-dot[data-theme="' + preferences.theme + '"]');
+  if (savedBtn) savedBtn.classList.add('active');
 }
 if (preferences.fontSize) {
   document.querySelector('.main').style.fontSize = preferences.fontSize + 'px';
@@ -393,8 +394,9 @@ applyHighlights();
 // Theme
 function st(t) {
   document.body.setAttribute('data-theme', t);
-  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('.theme-dot').forEach(function(d) { d.classList.remove('active'); });
+  var btn = document.querySelector('.theme-dot[data-theme="' + t + '"]');
+  if (btn) btn.classList.add('active');
   preferences.theme = t;
   localStorage.setItem('preferences', JSON.stringify(preferences));
 }
@@ -431,9 +433,10 @@ sections.forEach(section => observer.observe(section));
 
 // Sidebar tabs
 function switchTab(tab) {
-  document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('.sidebar-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.sidebar-panel').forEach(function(p) { p.classList.remove('active'); });
+  var btn = document.querySelector('.sidebar-tab[data-tab="' + tab + '"]');
+  if (btn) btn.classList.add('active');
   document.getElementById(tab + 'Panel').classList.add('active');
   if (tab === 'bookmarks') renderBookmarks();
   if (tab === 'notes') renderNotes();
@@ -527,7 +530,7 @@ function performKeywordSearch(query) {
     searchResults.innerHTML = '<div class="search-result">No results found</div>';
   } else {
     searchResults.innerHTML = results.slice(0, 10).map(r =>
-      '<div class="search-result" onclick="jumpToChapter(\\'' + r.chapterId + '\\')">' +
+      '<div class="search-result" onclick="jumpToChapter(&#39;' + r.chapterId + '&#39;)">' +
       '<div class="chapter">' + r.title + '</div>' +
       '<div class="snippet">' + r.snippet + '</div>' +
       '</div>'
@@ -575,7 +578,7 @@ async function performAISearch(query, apiKey) {
       result.chapters.forEach(chTitle => {
         const section = Array.from(sections).find(s => s.dataset.title.includes(chTitle));
         if (section) {
-          html += '<div style="margin-top:5px;padding:5px;background:var(--accent-bg);border-radius:4px;cursor:pointer" onclick="jumpToChapter(\\'' + section.id + '\\')">' + section.dataset.title + '</div>';
+          html += '<div style="margin-top:5px;padding:5px;background:var(--accent-bg);border-radius:4px;cursor:pointer" onclick="jumpToChapter(&#39;' + section.id + '&#39;)">' + section.dataset.title + '</div>';
         }
       });
     }
@@ -619,7 +622,7 @@ function addChatMessage(role, content, citations = [], sourcePassages = []) {
   // Add citations if provided
   if (citations.length > 0) {
     html += '<span class="citation">Sources: ';
-    html += citations.map(c => '<a href="#' + c.id + '" onclick="event.preventDefault(); jumpToChapter(\'' + c.id + '\');">' + c.title + '</a>').join(', ');
+    html += citations.map(function(c) { return '<a href="#' + c.id + '" onclick="event.preventDefault(); jumpToChapter(&#39;' + c.id + '&#39;);">' + c.title + '</a>'; }).join(', ');
     html += '</span>';
   }
   
@@ -978,8 +981,8 @@ function renderNotes() {
   list.innerHTML = notes.map(n => {
     const section = document.getElementById(n.chapterId);
     const chapterTitle = section ? section.dataset.title : 'Unknown';
-    return '<div class="note-item" onclick="jumpToChapter(\\'' + n.chapterId + '\\')">' +
-      '<span class="delete" onclick="event.stopPropagation();deleteNote(\\'' + n.id + '\\')">×</span>' +
+    return '<div class="note-item" onclick="jumpToChapter(&#39;' + n.chapterId + '&#39;)">' +
+      '<span class="delete" onclick="event.stopPropagation();deleteNote(&#39;' + n.id + '&#39;)">×</span>' +
       '<div style="font-weight:700;color:var(--accent);font-size:11px;margin-bottom:4px">' + chapterTitle + '</div>' +
       '<div style="font-style:italic;opacity:.7;margin-bottom:4px">"' + n.selection.substring(0, 50) + '..."</div>' +
       '<div>' + n.text + '</div>' +
@@ -1025,8 +1028,8 @@ function renderBookmarks() {
   }
   
   list.innerHTML = bookmarks.map(b =>
-    '<div class="bookmark-item" onclick="jumpToChapter(\\'' + b.chapterId + '\\')">' +
-    '<span class="delete" onclick="event.stopPropagation();deleteBookmark(\\'' + b.id + '\\')">×</span>' +
+    '<div class="bookmark-item" onclick="jumpToChapter(&#39;' + b.chapterId + '&#39;)">' +
+    '<span class="delete" onclick="event.stopPropagation();deleteBookmark(&#39;' + b.id + '&#39;)">×</span>' +
     '<div>' + b.title + '</div>' +
     '</div>'
   ).join('');
