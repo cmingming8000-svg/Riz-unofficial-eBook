@@ -95,7 +95,7 @@ export default function rizalBookPlugin() {
       ).join('\n');
 
       const chaptersHtml = chapterData.map((ch, idx) =>
-        `<div class="page" data-page="${idx + 2}"><h1 class="chapter-title" id="${ch.id}">${esc(ch.title)}</h1><div class="chapter-content">${ch.html}</div><div class="page-num">${idx + 3}</div></div>`
+        `<div class="chapter" data-chapter="${ch.id}" data-chapter-index="${idx}"><h1 class="chapter-title">${esc(ch.title)}</h1><div class="chapter-content">${ch.html}</div></div>`
       ).join('\n');
 
       const finalHtml = `<!DOCTYPE html>
@@ -132,6 +132,13 @@ body{
   background:var(--paper);
   box-shadow:0 0 60px var(--shadow);
   overflow:hidden;
+}
+#book-content{
+  display:none;
+}
+#pages-container{
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
 }
 .page{
   position:absolute;
@@ -181,6 +188,10 @@ body{
   font-size:.8em;
   opacity:.4;
   font-style:italic;
+}
+.page-content{
+  height:100%;
+  overflow:hidden;
 }
 .controls{
   position:fixed;
@@ -348,11 +359,19 @@ body{
   font-size:.5em;
   opacity:.4;
 }
-.chapter-content{
+.chapter-content,
+.page-content{
   text-align:justify;
   hyphens:auto;
   line-height:1.9;
   font-size:1.05em;
+}
+.page-content > *:first-child:not(.chapter-title){
+  text-indent:0;
+}
+.page-content p{
+  margin-bottom:1.2em;
+  text-indent:1.5em;
 }
 .chapter-content p{
   margin-bottom:1.2em;
@@ -478,7 +497,7 @@ body{
 </div>
 <div class="book-viewport">
 <div class="book-container" id="mc">
-<div class="page active" data-page="0">
+<div id="book-content" style="display:none">
 <div class="book-cover">
 <div class="book-title">Jose Rizal</div>
 <div class="book-subtitle">Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero</div>
@@ -486,23 +505,19 @@ body{
 <div class="book-author">Gregorio F. Zaide &amp; Sonia M. Zaide</div>
 <div class="book-edition">Second Edition</div>
 </div>
-<div class="page-num">Cover</div>
-</div>
-<div class="page" data-page="1">
+<div class="toc-page">
 <div class="toc-title">Contents</div>
 <ol class="toc-list">${tocHtml.replace(/<li><a href="#([^"]+)" data-target="[^"]+">([^<]+)<\/a><\/li>/g, (match, id, title) => '<li class="toc-item"><a data-chapter="'+id+'">'+title+'</a></li>')}</ol>
-<div class="page-num">Contents</div>
 </div>
 ${chaptersHtml}
-<div class="page" data-page="${chapterData.length + 2}">
 <div class="colophon">
 <div class="ornament">❦</div>
 <p>Based on "Jose Rizal: Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero"</p>
 <p>Second Edition by Gregorio F. Zaide and Sonia M. Zaide</p>
 <p style="margin-top:20px;font-style:italic">A Digital Edition</p>
 </div>
-<div class="page-num">Colophon</div>
 </div>
+<div id="pages-container"></div>
 </div>
 </div>
 <div class="nav-controls">
@@ -512,11 +527,153 @@ ${chaptersHtml}
 </div>
 <script>
 let currentPage = 0;
-const pages = document.querySelectorAll('.page');
-const totalPages = pages.length;
+let totalPages = 0;
+let pages = [];
 let touchStartX = 0;
 let touchEndX = 0;
 let isAnimating = false;
+let chapterPageMap = {};
+
+function paginateContent() {
+  const content = document.getElementById('book-content');
+  const container = document.getElementById('pages-container');
+  const pageHeight = window.innerHeight - 140; // Account for padding
+  
+  // Get all major content blocks
+  const cover = content.querySelector('.book-cover');
+  const toc = content.querySelector('.toc-page');
+  const chapters = content.querySelectorAll('.chapter');
+  const colophon = content.querySelector('.colophon');
+  
+  // Create pages array
+  const allPages = [];
+  
+  // Add cover page
+  allPages.push({type: 'cover', content: cover.outerHTML});
+  
+  // Add TOC page
+  allPages.push({type: 'toc', content: toc.outerHTML});
+  
+  // Process each chapter
+  chapters.forEach((chapter, chapterIdx) => {
+    const chapterId = chapter.getAttribute('data-chapter');
+    const title = chapter.querySelector('.chapter-title');
+    const contentDiv = chapter.querySelector('.chapter-content');
+    
+    // Create a temporary container to measure content
+    const tempDiv = document.createElement('div');
+    tempDiv.style.cssText = 'position:absolute;visibility:hidden;width:740px;padding:0;';
+    document.body.appendChild(tempDiv);
+    
+    // Add title
+    const titleClone = title.cloneNode(true);
+    tempDiv.appendChild(titleClone);
+    
+    // Get all content elements
+    const elements = Array.from(contentDiv.children);
+    let currentPageContent = [];
+    let currentHeight = titleClone.offsetHeight;
+    
+    elements.forEach((el, elIdx) => {
+      const clone = el.cloneNode(true);
+      tempDiv.appendChild(clone);
+      const elHeight = clone.offsetHeight;
+      
+      if (currentHeight + elHeight > pageHeight && currentPageContent.length > 0) {
+        // Save current page
+        allPages.push({
+          type: 'chapter',
+          chapterId: chapterId,
+          chapterIndex: chapterIdx,
+          content: currentPageContent.map(e => e.outerHTML).join('')
+        });
+        
+        // Start new page
+        currentPageContent = [];
+        currentHeight = 0;
+        tempDiv.innerHTML = '';
+        
+        // Re-add element to fresh container
+        tempDiv.appendChild(clone);
+        currentHeight = clone.offsetHeight;
+      } else {
+        currentHeight += elHeight;
+      }
+      
+      currentPageContent.push(clone);
+    });
+    
+    // Add remaining content as final page of chapter
+    if (currentPageContent.length > 0) {
+      allPages.push({
+        type: 'chapter',
+        chapterId: chapterId,
+        chapterIndex: chapterIdx,
+        content: currentPageContent.map(e => e.outerHTML).join('')
+      });
+    }
+    
+    tempDiv.remove();
+  });
+  
+  // Add colophon page
+  allPages.push({type: 'colophon', content: colophon.outerHTML});
+  
+  // Build chapter page map for TOC navigation
+  allPages.forEach((page, idx) => {
+    if (page.type === 'chapter' && page.chapterId) {
+      if (!chapterPageMap[page.chapterId]) {
+        chapterPageMap[page.chapterId] = idx;
+      }
+    }
+  });
+  
+  // Create page elements
+  container.innerHTML = '';
+  allPages.forEach((pageData, idx) => {
+    const pageEl = document.createElement('div');
+    pageEl.className = 'page';
+    pageEl.setAttribute('data-page', idx);
+    
+    let pageContent = '<div class="page-content">';
+    
+    if (pageData.type === 'cover') {
+      pageContent += pageData.content;
+    } else if (pageData.type === 'toc') {
+      pageContent += pageData.content;
+    } else if (pageData.type === 'chapter') {
+      if (idx === 0 || allPages[idx-1].chapterId !== pageData.chapterId) {
+        // First page of chapter - add title
+        const chapter = chapters[pageData.chapterIndex];
+        const title = chapter.querySelector('.chapter-title');
+        pageContent += title.outerHTML;
+      }
+      pageContent += pageData.content;
+    } else if (pageData.type === 'colophon') {
+      pageContent += pageData.content;
+    }
+    
+    pageContent += '</div>';
+    pageContent += '<div class="page-num">' + (idx + 1) + '</div>';
+    
+    pageEl.innerHTML = pageContent;
+    container.appendChild(pageEl);
+  });
+  
+  pages = container.querySelectorAll('.page');
+  totalPages = pages.length;
+  
+  // Show first page
+  content.style.display = 'none';
+  pages[0].classList.add('active');
+  updatePageIndicator();
+}
+
+function updatePageIndicator() {
+  document.getElementById('pageIndicator').textContent = (currentPage + 1) + ' / ' + totalPages;
+  document.getElementById('prevBtn').disabled = currentPage === 0;
+  document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+}
 
 function updatePage(direction) {
   if (isAnimating) return;
@@ -541,9 +698,7 @@ function updatePage(direction) {
     }
   }
   
-  document.getElementById('pageIndicator').textContent = (currentPage + 1) + ' / ' + totalPages;
-  document.getElementById('prevBtn').disabled = currentPage === 0;
-  document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+  updatePageIndicator();
   
   setTimeout(() => {
     isAnimating = false;
@@ -568,16 +723,12 @@ function prevPage() {
 }
 
 function goToChapter(id) {
-  const chapterEl = document.getElementById(id);
-  if (chapterEl) {
-    const pageContainer = chapterEl.closest('.page');
-    if (pageContainer) {
-      const targetPage = parseInt(pageContainer.getAttribute('data-page'));
-      if (targetPage !== currentPage) {
-        const direction = targetPage > currentPage ? 'next' : 'prev';
-        currentPage = targetPage;
-        updatePage(direction);
-      }
+  if (chapterPageMap[id] !== undefined) {
+    const targetPage = chapterPageMap[id];
+    if (targetPage !== currentPage) {
+      const direction = targetPage > currentPage ? 'next' : 'prev';
+      currentPage = targetPage;
+      updatePage(direction);
     }
   }
 }
@@ -600,6 +751,8 @@ function fs(d){
   fz=Math.max(14,Math.min(22,fz+d));
   document.getElementById('mc').style.fontSize=fz+'px';
   document.getElementById('fl').textContent=fz;
+  // Re-paginate on font size change
+  setTimeout(paginateContent, 100);
 }
 
 // Keyboard navigation
@@ -642,7 +795,19 @@ document.querySelector('.book-viewport').addEventListener('click', function(e) {
   else if (x > width * 0.7) nextPage();
 });
 
-updatePage();
+// Initialize pagination when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', paginateContent);
+} else {
+  paginateContent();
+}
+
+// Re-paginate on window resize
+let resizeTimeout;
+window.addEventListener('resize', function() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(paginateContent, 250);
+});
 </script>
 </body>
 </html>`;
