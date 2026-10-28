@@ -105,6 +105,19 @@ mark.orange{background:#ffcc80}
 .chat-message .citation{display:block;margin-top:8px;font-size:11px;opacity:.7;font-style:italic}
 .chat-message .citation a{color:var(--accent);text-decoration:none}
 .chat-message .citation a:hover{text-decoration:underline}
+.chat-message .actions{display:flex;gap:8px;margin-top:10px}
+.chat-message .action-btn{padding:4px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer;transition:all .2s}
+.chat-message .action-btn:hover{background:var(--accent);color:var(--sidebar);border-color:var(--accent)}
+mark.ai-highlight{background:#ffd54f;outline:2px solid #ff9800;outline-offset:2px;cursor:pointer;animation:pulse 2s ease-in-out 3}
+@keyframes pulse{0%,100%{outline-color:#ff9800}50%{outline-color:#ff5722}}
+.ai-highlights-indicator{position:fixed;bottom:20px;left:20px;background:var(--sidebar);border:1px solid var(--border);border-radius:8px;padding:12px 16px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:500;display:none;max-width:300px}
+.ai-highlights-indicator.active{display:block}
+.ai-highlights-indicator h4{font-size:13px;margin-bottom:8px;color:var(--accent)}
+.ai-highlights-indicator p{font-size:12px;margin-bottom:10px;line-height:1.4}
+.ai-highlights-indicator .indicator-buttons{display:flex;gap:8px}
+.ai-highlights-indicator .indicator-btn{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer;transition:all .2s}
+.ai-highlights-indicator .indicator-btn:hover{background:var(--accent);color:var(--sidebar);border-color:var(--accent)}
+.ai-highlights-indicator .indicator-btn.primary{background:var(--accent);color:var(--sidebar);border-color:var(--accent)}
 .chat-input-area{padding:15px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
 .chat-input-area textarea{flex:1;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;resize:none;min-height:40px;max-height:100px}
 .chat-input-area button{padding:10px 20px;background:var(--accent);color:var(--sidebar);border:none;border-radius:6px;cursor:pointer;font-weight:600;transition:opacity .2s}
@@ -1728,6 +1741,14 @@ Hello! I'm here to help you learn about Jose Rizal based on this book. Ask me an
 </div>
 </div>
 </div>
+<div class="ai-highlights-indicator" id="aiHighlightsIndicator">
+<h4>📍 AI Source Highlights</h4>
+<p>The AI has highlighted where it found this information in the book.</p>
+<div class="indicator-buttons">
+<button class="indicator-btn" onclick="dismissAIHighlights()">Dismiss</button>
+<button class="indicator-btn primary" onclick="viewAIHighlights()">View Highlights</button>
+</div>
+</div>
 <script>
 // State
 let highlights = JSON.parse(localStorage.getItem('highlights') || '[]');
@@ -1994,7 +2015,9 @@ function closeChat() {
   document.getElementById('chatModal').classList.remove('active');
 }
 
-function addChatMessage(role, content, citations = []) {
+let aiHighlightElements = [];
+
+function addChatMessage(role, content, citations = [], sourcePassages = []) {
   const messagesDiv = document.getElementById('chatMessages');
   const messageDiv = document.createElement('div');
   messageDiv.className = 'chat-message ' + role;
@@ -2004,13 +2027,113 @@ function addChatMessage(role, content, citations = []) {
   // Add citations if provided
   if (citations.length > 0) {
     html += '<span class="citation">Sources: ';
-    html += citations.map(c => '<a href="#' + c.id + '" onclick="jumpToChapter('' + c.id + ''); closeChat();">' + c.title + '</a>').join(', ');
+    html += citations.map(c => '<a href="#' + c.id + '" onclick="event.preventDefault(); jumpToChapter('' + c.id + '');">' + c.title + '</a>').join(', ');
     html += '</span>';
+  }
+  
+  // Add action buttons for AI messages
+  if (role === 'assistant' && sourcePassages.length > 0) {
+    html += '<div class="actions">';
+    html += '<button class="action-btn" onclick="showSourceInBook(' + JSON.stringify(sourcePassages).replace(/"/g, '&quot;') + ')">📍 Show in Book</button>';
+    html += '</div>';
   }
   
   messageDiv.innerHTML = html;
   messagesDiv.appendChild(messageDiv);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function showSourceInBook(passages) {
+  // Clear previous AI highlights
+  dismissAIHighlights();
+  
+  // Highlight each passage
+  passages.forEach(passage => {
+    const section = document.getElementById(passage.chapterId);
+    if (!section) return;
+    
+    const content = section.querySelector('.chapter-content');
+    const text = content.textContent;
+    const searchText = passage.text;
+    
+    // Find the text in the content
+    const index = text.indexOf(searchText);
+    if (index === -1) return;
+    
+    // Use TreeWalker to find the text node
+    const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
+    let node;
+    let currentIndex = 0;
+    
+    while (node = walker.nextNode()) {
+      const nodeLength = node.textContent.length;
+      
+      if (currentIndex + nodeLength > index) {
+        // Found the node containing our text
+        const startOffset = index - currentIndex;
+        const endOffset = Math.min(startOffset + searchText.length, nodeLength);
+        
+        try {
+          const range = document.createRange();
+          range.setStart(node, startOffset);
+          range.setEnd(node, endOffset);
+          
+          const mark = document.createElement('mark');
+          mark.className = 'ai-highlight';
+          mark.onclick = function() {
+            if (confirm('Remove this highlight?')) {
+              const parent = this.parentNode;
+              while (this.firstChild) {
+                parent.insertBefore(this.firstChild, this);
+              }
+              parent.removeChild(this);
+              aiHighlightElements = aiHighlightElements.filter(el => el !== this);
+              if (aiHighlightElements.length === 0) {
+                document.getElementById('aiHighlightsIndicator').classList.remove('active');
+              }
+            }
+          };
+          
+          range.surroundContents(mark);
+          aiHighlightElements.push(mark);
+        } catch (e) {
+          console.error('Could not highlight:', e);
+        }
+        
+        break;
+      }
+      
+      currentIndex += nodeLength;
+    }
+  });
+  
+  // Show indicator (but don't scroll)
+  if (aiHighlightElements.length > 0) {
+    document.getElementById('aiHighlightsIndicator').classList.add('active');
+  }
+}
+
+function dismissAIHighlights() {
+  aiHighlightElements.forEach(mark => {
+    const parent = mark.parentNode;
+    if (parent) {
+      while (mark.firstChild) {
+        parent.insertBefore(mark.firstChild, mark);
+      }
+      parent.removeChild(mark);
+    }
+  });
+  aiHighlightElements = [];
+  document.getElementById('aiHighlightsIndicator').classList.remove('active');
+}
+
+function viewAIHighlights() {
+  if (aiHighlightElements.length > 0) {
+    // Scroll to first highlight
+    aiHighlightElements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Hide indicator after viewing
+    document.getElementById('aiHighlightsIndicator').classList.remove('active');
+  }
 }
 
 async function sendChatMessage() {
@@ -2064,6 +2187,8 @@ async function sendChatMessage() {
       '5. Be concise but thorough
 ' +
       '6. Format your response clearly with chapter citations at the end
+' +
+      '7. At the end of your response, include a JSON array called "sourcePassages" with exact quotes from the book that you used. Format: [{"chapterId": "ch1", "text": "exact quote from the book"}]
 
 ' +
       'BOOK CONTENT:
@@ -2071,7 +2196,7 @@ async function sendChatMessage() {
       bookContext + '
 
 ' +
-      'Respond to the user's question using ONLY the information from the book above.';
+      'Respond to the user's question using ONLY the information from the book above. Include the sourcePassages JSON at the end.';
     
     // Prepare messages for API
     const messages = [
@@ -2119,7 +2244,21 @@ Current question: ' + message;
       throw new Error('No response from AI');
     }
     
-    const aiResponse = data.candidates[0].content.parts[0].text;
+    let aiResponse = data.candidates[0].content.parts[0].text;
+    
+    // Extract sourcePassages JSON from response
+    let sourcePassages = [];
+    const jsonMatch = aiResponse.match(/sourcePassages["s:]*[([sS]*?)]/i);
+    if (jsonMatch) {
+      try {
+        const passagesJson = '[' + jsonMatch[1] + ']';
+        sourcePassages = JSON.parse(passagesJson);
+        // Remove the JSON from the display text
+        aiResponse = aiResponse.replace(/sourcePassages["s:]*[[sS]*?]/i, '').trim();
+      } catch (e) {
+        console.error('Failed to parse sourcePassages:', e);
+      }
+    }
     
     // Extract citations from response
     const citations = [];
@@ -2133,7 +2272,7 @@ Current question: ' + message;
     });
     
     // Add AI response to UI
-    addChatMessage('assistant', aiResponse, citations);
+    addChatMessage('assistant', aiResponse, citations, sourcePassages);
     
     // Add to history
     chatHistory.push({ role: 'assistant', content: aiResponse });
