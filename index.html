@@ -228,6 +228,9 @@ body{
   list-style:none;
   max-width:550px;
   margin:0 auto;
+  max-height:calc(100vh - 200px);
+  overflow-y:auto;
+  padding-right:10px;
 }
 .toc-item{
   margin-bottom:10px;
@@ -240,6 +243,7 @@ body{
   transition:color .2s;
   font-size:1em;
   cursor:pointer;
+  display:block;
 }
 .toc-item a:hover{color:var(--accent)}
 .chapter-title{
@@ -1947,22 +1951,29 @@ let chapterPageMap = {};
 function paginateContent() {
   const content = document.getElementById('book-content');
   const container = document.getElementById('pages-container');
-  const pageHeight = window.innerHeight - 140; // Account for padding
+  
+  // Make content visible temporarily for measurement
+  content.style.display = 'block';
+  content.style.position = 'absolute';
+  content.style.visibility = 'hidden';
+  content.style.width = '740px';
+  
+  const pageHeight = window.innerHeight - 140;
   
   // Get all major content blocks
   const cover = content.querySelector('.book-cover');
   const toc = content.querySelector('.toc-page');
-  const chapters = content.querySelectorAll('.chapter');
+  const chapters = Array.from(content.querySelectorAll('.chapter'));
   const colophon = content.querySelector('.colophon');
   
   // Create pages array
   const allPages = [];
   
   // Add cover page
-  allPages.push({type: 'cover', content: cover.outerHTML});
+  allPages.push({type: 'cover', html: cover.outerHTML});
   
   // Add TOC page
-  allPages.push({type: 'toc', content: toc.outerHTML});
+  allPages.push({type: 'toc', html: toc.outerHTML});
   
   // Process each chapter
   chapters.forEach((chapter, chapterIdx) => {
@@ -1970,73 +1981,86 @@ function paginateContent() {
     const title = chapter.querySelector('.chapter-title');
     const contentDiv = chapter.querySelector('.chapter-content');
     
-    // Create a temporary container to measure content
-    const tempDiv = document.createElement('div');
-    tempDiv.style.cssText = 'position:absolute;visibility:hidden;width:740px;padding:0;';
-    document.body.appendChild(tempDiv);
+    // Create measurement container
+    const measureDiv = document.createElement('div');
+    measureDiv.style.cssText = 'position:absolute;visibility:hidden;width:740px;padding:0;font-family:inherit;font-size:inherit;line-height:inherit;';
+    document.body.appendChild(measureDiv);
     
-    // Add title
+    // Measure title
     const titleClone = title.cloneNode(true);
-    tempDiv.appendChild(titleClone);
+    measureDiv.appendChild(titleClone);
+    let titleHeight = titleClone.offsetHeight + 40; // Add margin
     
     // Get all content elements
     const elements = Array.from(contentDiv.children);
-    let currentPageContent = [];
-    let currentHeight = titleClone.offsetHeight;
+    let currentPageElements = [];
+    let currentHeight = titleHeight;
+    let isFirstPage = true;
     
-    elements.forEach((el, elIdx) => {
+    elements.forEach((el) => {
       const clone = el.cloneNode(true);
-      tempDiv.appendChild(clone);
-      const elHeight = clone.offsetHeight;
+      measureDiv.appendChild(clone);
+      const elHeight = clone.offsetHeight + 20; // Add spacing
       
-      if (currentHeight + elHeight > pageHeight && currentPageContent.length > 0) {
+      if (currentHeight + elHeight > pageHeight && currentPageElements.length > 0) {
         // Save current page
+        const pageHtml = currentPageElements.map(e => e.outerHTML).join('');
         allPages.push({
           type: 'chapter',
           chapterId: chapterId,
           chapterIndex: chapterIdx,
-          content: currentPageContent.map(e => e.outerHTML).join('')
+          html: (isFirstPage ? title.outerHTML : '') + '<div class="chapter-content">' + pageHtml + '</div>',
+          isFirstPage: isFirstPage
         });
+        isFirstPage = false;
         
         // Start new page
-        currentPageContent = [];
+        currentPageElements = [];
         currentHeight = 0;
-        tempDiv.innerHTML = '';
+        measureDiv.innerHTML = '';
         
-        // Re-add element to fresh container
-        tempDiv.appendChild(clone);
-        currentHeight = clone.offsetHeight;
+        // Re-add element
+        const newClone = el.cloneNode(true);
+        measureDiv.appendChild(newClone);
+        currentHeight = newClone.offsetHeight + 20;
       } else {
         currentHeight += elHeight;
       }
       
-      currentPageContent.push(clone);
+      currentPageElements.push(clone);
     });
     
-    // Add remaining content as final page of chapter
-    if (currentPageContent.length > 0) {
+    // Add remaining content
+    if (currentPageElements.length > 0) {
+      const pageHtml = currentPageElements.map(e => e.outerHTML).join('');
       allPages.push({
         type: 'chapter',
         chapterId: chapterId,
         chapterIndex: chapterIdx,
-        content: currentPageContent.map(e => e.outerHTML).join('')
+        html: (isFirstPage ? title.outerHTML : '') + '<div class="chapter-content">' + pageHtml + '</div>',
+        isFirstPage: isFirstPage
       });
     }
     
-    tempDiv.remove();
+    measureDiv.remove();
   });
   
   // Add colophon page
-  allPages.push({type: 'colophon', content: colophon.outerHTML});
+  allPages.push({type: 'colophon', html: colophon.outerHTML});
   
-  // Build chapter page map for TOC navigation
+  // Build chapter page map
+  chapterPageMap = {};
   allPages.forEach((page, idx) => {
-    if (page.type === 'chapter' && page.chapterId) {
-      if (!chapterPageMap[page.chapterId]) {
-        chapterPageMap[page.chapterId] = idx;
-      }
+    if (page.type === 'chapter' && page.chapterId && !chapterPageMap[page.chapterId]) {
+      chapterPageMap[page.chapterId] = idx;
     }
   });
+  
+  // Hide content again
+  content.style.display = 'none';
+  content.style.position = '';
+  content.style.visibility = '';
+  content.style.width = '';
   
   // Create page elements
   container.innerHTML = '';
@@ -2044,29 +2068,7 @@ function paginateContent() {
     const pageEl = document.createElement('div');
     pageEl.className = 'page';
     pageEl.setAttribute('data-page', idx);
-    
-    let pageContent = '<div class="page-content">';
-    
-    if (pageData.type === 'cover') {
-      pageContent += pageData.content;
-    } else if (pageData.type === 'toc') {
-      pageContent += pageData.content;
-    } else if (pageData.type === 'chapter') {
-      if (idx === 0 || allPages[idx-1].chapterId !== pageData.chapterId) {
-        // First page of chapter - add title
-        const chapter = chapters[pageData.chapterIndex];
-        const title = chapter.querySelector('.chapter-title');
-        pageContent += title.outerHTML;
-      }
-      pageContent += pageData.content;
-    } else if (pageData.type === 'colophon') {
-      pageContent += pageData.content;
-    }
-    
-    pageContent += '</div>';
-    pageContent += '<div class="page-num">' + (idx + 1) + '</div>';
-    
-    pageEl.innerHTML = pageContent;
+    pageEl.innerHTML = '<div class="page-content">' + pageData.html + '</div><div class="page-num">' + (idx + 1) + '</div>';
     container.appendChild(pageEl);
   });
   
@@ -2074,9 +2076,13 @@ function paginateContent() {
   totalPages = pages.length;
   
   // Show first page
-  content.style.display = 'none';
-  pages[0].classList.add('active');
+  if (pages.length > 0) {
+    pages[0].classList.add('active');
+  }
   updatePageIndicator();
+  
+  // Attach TOC handlers after pages are created
+  attachTocHandlers();
 }
 
 function updatePageIndicator() {
@@ -2143,12 +2149,19 @@ function goToChapter(id) {
   }
 }
 
-document.querySelectorAll('.toc-item a[data-chapter]').forEach(function(a) {
-  a.addEventListener('click', function(e) {
-    e.preventDefault();
-    goToChapter(this.getAttribute('data-chapter'));
+// Attach TOC click handlers after pagination
+function attachTocHandlers() {
+  document.querySelectorAll('.toc-item a[data-chapter]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const chapterId = this.getAttribute('data-chapter');
+      if (chapterId && chapterPageMap[chapterId] !== undefined) {
+        goToChapter(chapterId);
+      }
+    });
   });
-});
+}
 
 function st(t){
   document.body.setAttribute('data-theme',t);
