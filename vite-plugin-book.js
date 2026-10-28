@@ -116,8 +116,7 @@ body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(
 .search-box{flex:1;min-width:200px;position:relative}
 .search-box input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:14px}
 .search-box input:focus{outline:none;border-color:var(--accent)}
-.search-mode{display:flex;gap:5px;align-items:center;font-size:12px}
-.search-mode label{display:flex;align-items:center;gap:3px;cursor:pointer}
+
 .controls{display:flex;gap:8px;align-items:center}
 .ctrl-btn{background:none;border:1px solid var(--border);padding:6px 10px;border-radius:4px;cursor:pointer;color:var(--text);font-size:12px;font-weight:600;transition:all .2s}
 .ctrl-btn:hover{background:var(--accent);color:var(--sidebar);border-color:var(--accent)}
@@ -192,32 +191,7 @@ mark.orange{background:#ffcc80}
 .highlight-color.pink{background:#f48fb1}
 .highlight-color.orange{background:#ffcc80}
 .empty-state{text-align:center;padding:20px;opacity:.5;font-size:13px;font-style:italic}
-.chat-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
-.chat-modal.active{display:flex}
-.chat-container{background:var(--sidebar);border:1px solid var(--border);border-radius:8px;width:90%;max-width:600px;height:80vh;display:flex;flex-direction:column}
-.chat-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.chat-header h2{font-size:18px;color:var(--accent);margin:0}
-.chat-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text);line-height:1}
-.chat-messages{flex:1;overflow-y:auto;padding:20px}
-.chat-message{margin-bottom:15px;padding:12px 15px;border-radius:8px;max-width:85%}
-.chat-message.user{background:var(--accent);color:var(--sidebar);margin-left:auto;border-bottom-right-radius:2px}
-.chat-message.assistant{background:var(--bg);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:2px}
-.chat-message .citation{display:block;margin-top:8px;font-size:11px;opacity:.7;font-style:italic}
-.chat-message .citation a{color:var(--accent);text-decoration:none}
-.chat-message .citation a:hover{text-decoration:underline}
-.chat-message .actions{display:flex;gap:8px;margin-top:10px}
-.chat-message .action-btn{padding:4px 10px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer;transition:all .2s}
-.chat-message .action-btn:hover{background:var(--accent);color:var(--sidebar);border-color:var(--accent)}
-mark.ai-highlight{background:#ffd54f;outline:2px solid #ff9800;outline-offset:2px;cursor:pointer;animation:pulse 2s ease-in-out 3}
-@keyframes pulse{0%,100%{outline-color:#ff9800}50%{outline-color:#ff5722}}
-.ai-highlights-indicator{position:fixed;bottom:20px;left:20px;background:var(--sidebar);border:1px solid var(--border);border-radius:8px;padding:12px 16px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:500;display:none;max-width:300px}
-.ai-highlights-indicator.active{display:block}
-.ai-highlights-indicator h4{font-size:13px;margin-bottom:8px;color:var(--accent)}
-.ai-highlights-indicator p{font-size:12px;margin-bottom:10px;line-height:1.4}
-.ai-highlights-indicator .indicator-buttons{display:flex;gap:8px}
-.ai-highlights-indicator .indicator-btn{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text);cursor:pointer;transition:all .2s}
-.ai-highlights-indicator .indicator-btn:hover{background:var(--accent);color:var(--sidebar);border-color:var(--accent)}
-.ai-highlights-indicator .indicator-btn.primary{background:var(--accent);color:var(--sidebar);border-color:var(--accent)}
+
 .chat-input-area{padding:15px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
 .chat-input-area textarea{flex:1;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;resize:none;min-height:40px;max-height:100px}
 .chat-input-area button{padding:10px 20px;background:var(--accent);color:var(--sidebar);border:none;border-radius:6px;cursor:pointer;font-weight:600;transition:opacity .2s}
@@ -234,10 +208,7 @@ mark.ai-highlight{background:#ffd54f;outline:2px solid #ff9800;outline-offset:2p
 <input type="text" id="searchInput" placeholder="Search the book...">
 <div class="search-results" id="searchResults"></div>
 </div>
-<div class="search-mode">
-<label><input type="radio" name="searchMode" value="keyword" checked> Keyword</label>
-<label><input type="radio" name="searchMode" value="ai"> AI</label>
-</div>
+
 <div class="controls">
 <button class="ctrl-btn" onclick="fs(-2)">A-</button>
 <span id="fl" style="min-width:25px;text-align:center;font-size:12px">17</span>
@@ -245,8 +216,6 @@ mark.ai-highlight{background:#ffd54f;outline:2px solid #ff9800;outline-offset:2p
 <button class="theme-dot" data-theme="light" style="background:#fff" onclick="st('light')" title="Light"></button>
 <button class="theme-dot active" data-theme="sepia" style="background:#faf6ed" onclick="st('sepia')" title="Sepia"></button>
 <button class="theme-dot" data-theme="dark" style="background:#1a1a2e" onclick="st('dark')" title="Dark"></button>
-<button class="ctrl-btn" onclick="openChat()">Chat</button>
-<button class="ctrl-btn" onclick="openSettings()">Settings</button>
 <button class="ctrl-btn" onclick="exportData()">Export</button>
 <button class="ctrl-btn" onclick="document.getElementById('importFile').click()">Import</button>
 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
@@ -291,18 +260,7 @@ ${chaptersHtml}
 <div class="highlight-color orange" onclick="highlightSelection('orange')"></div>
 <div class="highlight-color" style="background:#999;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold" onclick="addNoteToSelection()">N</div>
 </div>
-<div class="modal" id="settingsModal">
-<div class="modal-content">
-<h2>Settings</h2>
-<label style="display:block;margin-bottom:10px;font-size:14px">Gemini API Key (for AI search):</label>
-<input type="password" id="apiKeyInput" placeholder="Enter your Gemini API key">
-<p style="font-size:12px;opacity:.7;margin-bottom:15px">Get your free API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color:var(--accent)">Google AI Studio</a></p>
-<div class="modal-buttons">
-<button class="ctrl-btn" onclick="closeSettings()">Cancel</button>
-<button class="ctrl-btn" onclick="saveApiKey()">Save</button>
-</div>
-</div>
-</div>
+
 <div class="modal" id="noteModal">
 <div class="modal-content">
 <h2>Add Note</h2>
@@ -313,32 +271,7 @@ ${chaptersHtml}
 </div>
 </div>
 </div>
-<div class="chat-modal" id="chatModal">
-<div class="chat-container">
-<div class="chat-header">
-<h2>Book Chat</h2>
-<button class="chat-close" onclick="closeChat()">&times;</button>
-</div>
-<div class="chat-disclaimer">Answers are based ONLY on the book content. Ask questions about Jose Rizal's life, works, and writings.</div>
-<div class="chat-messages" id="chatMessages">
-<div class="chat-message assistant">
-Hello! I'm here to help you learn about Jose Rizal based on this book. Ask me anything about his life, works, or the historical context. All my answers come directly from the book content.
-</div>
-</div>
-<div class="chat-input-area">
-<textarea id="chatInput" placeholder="Ask a question about the book..." rows="2"></textarea>
-<button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
-</div>
-</div>
-</div>
-<div class="ai-highlights-indicator" id="aiHighlightsIndicator">
-<h4>AI Source Highlights</h4>
-<p>The AI has highlighted where it found this information in the book.</p>
-<div class="indicator-buttons">
-<button class="indicator-btn" onclick="dismissAIHighlights()">Dismiss</button>
-<button class="indicator-btn primary" onclick="viewAIHighlights()">View Highlights</button>
-</div>
-</div>
+
 <script>
 // State
 let highlights = JSON.parse(localStorage.getItem('highlights') || '[]');
@@ -468,19 +401,7 @@ async function performSearch(query) {
     return;
   }
   
-  const mode = document.querySelector('input[name="searchMode"]:checked').value;
-  
-  if (mode === 'ai') {
-    const apiKey = localStorage.getItem('geminiApiKey');
-    if (!apiKey) {
-      searchResults.innerHTML = '<div class="search-result">Please add your Gemini API key in settings</div>';
-      searchResults.style.display = 'block';
-      return;
-    }
-    await performAISearch(query, apiKey);
-  } else {
-    performKeywordSearch(query);
-  }
+  performKeywordSearch(query);
 }
 
 function performKeywordSearch(query) {
@@ -539,336 +460,13 @@ function performKeywordSearch(query) {
   searchResults.style.display = 'block';
 }
 
-async function performAISearch(query, apiKey) {
-  searchResults.innerHTML = '<div class="search-result">Searching with AI...</div>';
-  searchResults.style.display = 'block';
-  
-  try {
-    const chaptersText = Array.from(sections).map(s => 
-      'CHAPTER: ' + s.dataset.title + '\\n' + s.querySelector('.chapter-content').textContent.substring(0, 2000)
-    ).join('\\n\\n');
-    
-    const prompt = 'You are helping a reader find information in a book about Jose Rizal. Question: "' + query + '"\\n\\nBased on the book content below, identify which chapters contain relevant information and provide a brief answer. Format your response as JSON with "answer" (string) and "chapters" (array of chapter titles).\\n\\n' + chaptersText;
-    
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
-      })
-    });
-    
-    const data = await response.json();
-    const text = data.candidates[0].content.parts[0].text;
-    
-    let result;
-    try {
-      const jsonMatch = text.match(/\\{[\\s\\S]*\\}/);
-      result = JSON.parse(jsonMatch[0]);
-    } catch (e) {
-      result = { answer: text, chapters: [] };
-    }
-    
-    let html = '<div class="search-result" style="cursor:default">';
-    html += '<div style="margin-bottom:10px"><strong>AI Answer:</strong><br>' + result.answer + '</div>';
-    
-    if (result.chapters && result.chapters.length > 0) {
-      html += '<div><strong>Relevant Chapters:</strong></div>';
-      result.chapters.forEach(chTitle => {
-        const section = Array.from(sections).find(s => s.dataset.title.includes(chTitle));
-        if (section) {
-          html += '<div style="margin-top:5px;padding:5px;background:var(--accent-bg);border-radius:4px;cursor:pointer" onclick="jumpToChapter(&apos;' + section.id + '&apos;)">' + section.dataset.title + '</div>';
-        }
-      });
-    }
-    
-    html += '</div>';
-    searchResults.innerHTML = html;
-  } catch (e) {
-    searchResults.innerHTML = '<div class="search-result">AI search failed: ' + e.message + '</div>';
-  }
-}
-
 function jumpToChapter(id) {
   document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
   searchResults.style.display = 'none';
   searchInput.value = '';
 }
 
-// Chat functionality
-let chatHistory = [];
 
-function openChat() {
-  document.getElementById('chatModal').classList.add('active');
-  document.getElementById('chatInput').focus();
-}
-
-function closeChat() {
-  document.getElementById('chatModal').classList.remove('active');
-}
-
-let aiHighlightElements = [];
-let chatMessagePassages = {};
-let chatMessageCounter = 0;
-
-function addChatMessage(role, content, citations = [], sourcePassages = []) {
-  const messagesDiv = document.getElementById('chatMessages');
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'chat-message ' + role;
-  
-  let html = content;
-  
-  // Add citations if provided
-  if (citations.length > 0) {
-    html += '<span class="citation">Sources: ';
-    html += citations.map(function(c) { return '<a href="#' + c.id + '" onclick="event.preventDefault(); jumpToChapter(&apos;' + c.id + '&apos;);">' + c.title + '</a>'; }).join(', ');
-    html += '</span>';
-  }
-  
-  // Add action buttons for AI messages
-  if (role === 'assistant' && sourcePassages.length > 0) {
-    const messageId = 'msg-' + (++chatMessageCounter);
-    chatMessagePassages[messageId] = sourcePassages;
-    html += '<div class="actions">';
-    html += '<button class="action-btn" onclick="showSourceInBook(&apos;' + messageId + '&apos;)">Show in Book</button>';
-    html += '</div>';
-  }
-  
-  messageDiv.innerHTML = html;
-  messagesDiv.appendChild(messageDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function showSourceInBook(messageId) {
-  const passages = chatMessagePassages[messageId];
-  if (!passages) return;
-  
-  // Clear previous AI highlights
-  dismissAIHighlights();
-  
-  // Highlight each passage
-  passages.forEach(passage => {
-    const section = document.getElementById(passage.chapterId);
-    if (!section) return;
-    
-    const content = section.querySelector('.chapter-content');
-    const text = content.textContent;
-    const searchText = passage.text;
-    
-    // Find the text in the content
-    const index = text.indexOf(searchText);
-    if (index === -1) return;
-    
-    // Use TreeWalker to find the text node
-    const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
-    let node;
-    let currentIndex = 0;
-    
-    while (node = walker.nextNode()) {
-      const nodeLength = node.textContent.length;
-      
-      if (currentIndex + nodeLength > index) {
-        // Found the node containing our text
-        const startOffset = index - currentIndex;
-        const endOffset = Math.min(startOffset + searchText.length, nodeLength);
-        
-        try {
-          const range = document.createRange();
-          range.setStart(node, startOffset);
-          range.setEnd(node, endOffset);
-          
-          const mark = document.createElement('mark');
-          mark.className = 'ai-highlight';
-          mark.onclick = function() {
-            if (confirm('Remove this highlight?')) {
-              const parent = this.parentNode;
-              while (this.firstChild) {
-                parent.insertBefore(this.firstChild, this);
-              }
-              parent.removeChild(this);
-              aiHighlightElements = aiHighlightElements.filter(el => el !== this);
-              if (aiHighlightElements.length === 0) {
-                document.getElementById('aiHighlightsIndicator').classList.remove('active');
-              }
-            }
-          };
-          
-          range.surroundContents(mark);
-          aiHighlightElements.push(mark);
-        } catch (e) {
-          console.error('Could not highlight:', e);
-        }
-        
-        break;
-      }
-      
-      currentIndex += nodeLength;
-    }
-  });
-  
-  // Show indicator (but don't scroll)
-  if (aiHighlightElements.length > 0) {
-    document.getElementById('aiHighlightsIndicator').classList.add('active');
-  }
-}
-
-function dismissAIHighlights() {
-  aiHighlightElements.forEach(mark => {
-    const parent = mark.parentNode;
-    if (parent) {
-      while (mark.firstChild) {
-        parent.insertBefore(mark.firstChild, mark);
-      }
-      parent.removeChild(mark);
-    }
-  });
-  aiHighlightElements = [];
-  document.getElementById('aiHighlightsIndicator').classList.remove('active');
-}
-
-function viewAIHighlights() {
-  if (aiHighlightElements.length > 0) {
-    // Scroll to first highlight
-    aiHighlightElements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Hide indicator after viewing
-    document.getElementById('aiHighlightsIndicator').classList.remove('active');
-  }
-}
-
-async function sendChatMessage() {
-  const input = document.getElementById('chatInput');
-  const sendBtn = document.getElementById('chatSendBtn');
-  const message = input.value.trim();
-  
-  if (!message) return;
-  
-  const apiKey = localStorage.getItem('geminiApiKey');
-  if (!apiKey) {
-    alert('Please add your Gemini API key in Settings to use the chat feature.');
-    openSettings();
-    return;
-  }
-  
-  // Add user message to UI
-  addChatMessage('user', message);
-  input.value = '';
-  sendBtn.disabled = true;
-  sendBtn.textContent = 'Thinking...';
-  
-  // Build conversation history
-  chatHistory.push({ role: 'user', content: message });
-  
-  try {
-    // Build book context - include all chapter content
-    const bookContext = Array.from(document.querySelectorAll('section[id]')).map(section => {
-      const title = section.dataset.title;
-      const content = section.querySelector('.chapter-content').textContent;
-      return '=== ' + title + ' ===\n' + content;
-    }).join('\n\n');
-    
-    // System prompt - STRICT book-only instruction
-    const systemPrompt = 'You are a helpful assistant that answers questions about Jose Rizal based ONLY on the book content provided below.\n\n' +
-      'CRITICAL RULES:\n' +
-      '1. You must ONLY use information from the book content provided\n' +
-      '2. If the answer is not in the book, say "I don\'t have information about that in this book"\n' +
-      '3. Always cite which chapter(s) your answer comes from\n' +
-      '4. Do not use any external knowledge or make assumptions\n' +
-      '5. Be concise but thorough\n' +
-      '6. Format your response clearly with chapter citations at the end\n' +
-      '7. At the end of your response, include a JSON array called "sourcePassages" with exact quotes from the book that you used. Format: [{"chapterId": "ch1", "text": "exact quote from the book"}]\n\n' +
-      'BOOK CONTENT:\n' +
-      bookContext + '\n\n' +
-      'Respond to the user\'s question using ONLY the information from the book above. Include the sourcePassages JSON at the end.';
-    
-    // Prepare messages for API
-    const messages = [
-      { role: 'user', parts: [{ text: systemPrompt + '\n\nUser question: ' + chatHistory[0].content }] }
-    ];
-    
-    // Add conversation history (last 5 exchanges to keep context manageable)
-    if (chatHistory.length > 1) {
-      const recentHistory = chatHistory.slice(-10);
-      let contextMsg = 'Previous conversation:\n';
-      recentHistory.forEach(msg => {
-        contextMsg += (msg.role === 'user' ? 'User: ' : 'Assistant: ') + msg.content + '\n';
-      });
-      contextMsg += '\nCurrent question: ' + message;
-      messages[0].parts[0].text = systemPrompt + '\n\n' + contextMsg;
-    }
-    
-    // Call Gemini API
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: messages,
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 1000
-        }
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.error) {
-      throw new Error(data.error.message);
-    }
-    
-    if (!data.candidates || !data.candidates[0]) {
-      throw new Error('No response from AI');
-    }
-    
-    let aiResponse = data.candidates[0].content.parts[0].text;
-    
-    // Extract sourcePassages JSON from response
-    let sourcePassages = [];
-    const jsonMatch = aiResponse.match(/sourcePassages["\s:]*\[([\s\S]*?)\]/i);
-    if (jsonMatch) {
-      try {
-        const passagesJson = '[' + jsonMatch[1] + ']';
-        sourcePassages = JSON.parse(passagesJson);
-        // Remove the JSON from the display text
-        aiResponse = aiResponse.replace(/sourcePassages["\s:]*\[[\s\S]*?\]/i, '').trim();
-      } catch (e) {
-        console.error('Failed to parse sourcePassages:', e);
-      }
-    }
-    
-    // Extract citations from response
-    const citations = [];
-    const sections = document.querySelectorAll('section[id]');
-    sections.forEach(section => {
-      const title = section.dataset.title;
-      if (aiResponse.toLowerCase().includes(title.toLowerCase()) || 
-          aiResponse.toLowerCase().includes(title.split(':')[0].toLowerCase())) {
-        citations.push({ id: section.id, title: title });
-      }
-    });
-    
-    // Add AI response to UI
-    addChatMessage('assistant', aiResponse, citations, sourcePassages);
-    
-    // Add to history
-    chatHistory.push({ role: 'assistant', content: aiResponse });
-    
-  } catch (error) {
-    addChatMessage('assistant', 'Sorry, I encountered an error: ' + error.message + '\n\nPlease check your API key in settings and try again.');
-    console.error('Chat error:', error);
-  } finally {
-    sendBtn.disabled = false;
-    sendBtn.textContent = 'Send';
-  }
-}
-
-// Handle Enter key in chat input
-document.getElementById('chatInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendChatMessage();
-  }
-});
 
 // Highlighting
 document.addEventListener('mouseup', function(e) {
@@ -1041,26 +639,7 @@ function deleteBookmark(id) {
   renderBookmarks();
 }
 
-// Settings
-function openSettings() {
-  document.getElementById('apiKeyInput').value = localStorage.getItem('geminiApiKey') || '';
-  document.getElementById('settingsModal').classList.add('active');
-}
 
-function closeSettings() {
-  document.getElementById('settingsModal').classList.remove('active');
-}
-
-function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (key) {
-    localStorage.setItem('geminiApiKey', key);
-    alert('API key saved!');
-  } else {
-    localStorage.removeItem('geminiApiKey');
-  }
-  closeSettings();
-}
 
 // Export/Import
 function exportData() {
