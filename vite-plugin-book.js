@@ -95,7 +95,7 @@ export default function rizalBookPlugin() {
       ).join('\n');
 
       const chaptersHtml = chapterData.map((ch, idx) =>
-        `<div class="page" data-page="${idx + 2}"><div class="chapter"><h1 class="chapter-title" id="${ch.id}">${esc(ch.title)}</h1><div class="chapter-content">${ch.html}</div></div></div>`
+        `<div class="page" data-page="${idx + 2}"><h1 class="chapter-title" id="${ch.id}">${esc(ch.title)}</h1><div class="chapter-content">${ch.html}</div><div class="page-num">${idx + 3}</div></div>`
       ).join('\n');
 
       const finalHtml = `<!DOCTYPE html>
@@ -117,37 +117,80 @@ body{
   transition:background .4s,color .4s;
   -webkit-font-smoothing:antialiased;
   font-size:17px;
-  display:flex;
-  flex-direction:column;
+}
+.book-viewport{
+  width:100%;height:100vh;
+  position:relative;
+  overflow:hidden;
+  perspective:1500px;
 }
 .book-container{
-  flex:1;
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
   max-width:900px;
-  width:100%;
   margin:0 auto;
   background:var(--paper);
   box-shadow:0 0 60px var(--shadow);
-  position:relative;
   overflow:hidden;
-  display:flex;
-  flex-direction:column;
 }
 .page{
-  flex:1;
-  padding:60px 80px;
-  overflow-y:auto;
-  display:none;
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  padding:60px 80px 80px;
+  overflow:hidden;
+  opacity:0;
+  pointer-events:none;
+  transform-origin:left center;
+  transition:transform .5s ease,opacity .3s ease;
+  background:var(--paper);
 }
-.page.active{display:block}
+.page.active{
+  opacity:1;
+  pointer-events:auto;
+  transform:rotateY(0deg);
+}
+.page.flip-out{
+  animation:flipOut .5s ease forwards;
+}
+.page.flip-in{
+  animation:flipIn .5s ease forwards;
+}
+@keyframes flipOut{
+  0%{transform:rotateY(0);opacity:1}
+  100%{transform:rotateY(-90deg);opacity:0}
+}
+@keyframes flipIn{
+  0%{transform:rotateY(90deg);opacity:0}
+  100%{transform:rotateY(0);opacity:1}
+}
+.page.flip-out-rev{animation:flipOutRev .5s ease forwards}
+.page.flip-in-rev{animation:flipInRev .5s ease forwards}
+@keyframes flipOutRev{
+  0%{transform:rotateY(0);opacity:1}
+  100%{transform:rotateY(90deg);opacity:0}
+}
+@keyframes flipInRev{
+  0%{transform:rotateY(-90deg);opacity:0}
+  100%{transform:rotateY(0);opacity:1}
+}
+.page-num{
+  position:absolute;
+  bottom:25px;
+  left:0;right:0;
+  text-align:center;
+  font-size:.8em;
+  opacity:.4;
+  font-style:italic;
+}
 .controls{
   position:fixed;
-  top:20px;
-  right:20px;
+  top:15px;
+  right:15px;
   z-index:1000;
   display:flex;
-  gap:10px;
+  gap:8px;
   background:var(--paper);
-  padding:10px 15px;
+  padding:8px 12px;
   border-radius:8px;
   box-shadow:0 4px 20px var(--shadow);
   border:1px solid var(--border);
@@ -155,7 +198,7 @@ body{
 .ctrl-btn{
   background:none;
   border:1px solid var(--border);
-  padding:6px 12px;
+  padding:5px 10px;
   border-radius:4px;
   cursor:pointer;
   color:var(--text);
@@ -165,7 +208,7 @@ body{
 }
 .ctrl-btn:hover{background:var(--accent);color:var(--paper);border-color:var(--accent)}
 .theme-dot{
-  width:24px;height:24px;border-radius:50%;
+  width:22px;height:22px;border-radius:50%;
   border:2px solid var(--border);cursor:pointer;
   transition:all .2s;
 }
@@ -173,14 +216,14 @@ body{
 .theme-dot.active{border:3px solid var(--accent);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--accent)}
 .nav-controls{
   position:fixed;
-  bottom:20px;
+  bottom:15px;
   left:50%;
   transform:translateX(-50%);
   display:flex;
-  gap:15px;
+  gap:12px;
   align-items:center;
   background:var(--paper);
-  padding:12px 20px;
+  padding:10px 18px;
   border-radius:30px;
   box-shadow:0 4px 20px var(--shadow);
   border:1px solid var(--border);
@@ -189,7 +232,7 @@ body{
 .nav-btn{
   background:none;
   border:2px solid var(--accent);
-  width:40px;height:40px;
+  width:38px;height:38px;
   border-radius:50%;
   cursor:pointer;
   color:var(--accent);
@@ -203,9 +246,9 @@ body{
 .nav-btn:hover{background:var(--accent);color:var(--paper)}
 .nav-btn:disabled{opacity:.3;cursor:not-allowed}
 .page-indicator{
-  font-size:14px;
+  font-size:13px;
   color:var(--text);
-  min-width:80px;
+  min-width:70px;
   text-align:center;
   font-weight:600;
 }
@@ -221,13 +264,13 @@ body{
 .book-cover::before{
   content:'';
   position:absolute;
-  top:40px;left:40px;right:40px;bottom:40px;
+  top:30px;left:30px;right:30px;bottom:30px;
   border:2px solid var(--accent);
   opacity:.3;
   pointer-events:none;
 }
 .book-title{
-  font-size:3em;
+  font-size:2.8em;
   font-weight:700;
   line-height:1.2;
   margin-bottom:20px;
@@ -236,77 +279,63 @@ body{
   font-variant:small-caps;
 }
 .book-subtitle{
-  font-size:1.3em;
+  font-size:1.2em;
   font-style:italic;
   margin-bottom:30px;
   opacity:.8;
   line-height:1.5;
 }
 .book-author{
-  font-size:1.1em;
+  font-size:1em;
   margin-top:40px;
   letter-spacing:.1em;
   text-transform:uppercase;
   opacity:.7;
 }
 .book-edition{
-  font-size:.9em;
+  font-size:.85em;
   margin-top:15px;
   opacity:.5;
   font-style:italic;
 }
 .ornament{
   text-align:center;
-  margin:40px 0;
-  font-size:2em;
+  margin:30px 0;
+  font-size:1.8em;
   opacity:.3;
   color:var(--accent);
 }
-.toc-page{
-  height:100%;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-}
 .toc-title{
-  font-size:2em;
+  font-size:1.8em;
   text-align:center;
-  margin-bottom:40px;
+  margin-bottom:30px;
   color:var(--accent);
   font-variant:small-caps;
   letter-spacing:.1em;
 }
 .toc-list{
   list-style:none;
-  max-width:600px;
+  max-width:550px;
   margin:0 auto;
 }
 .toc-item{
-  margin-bottom:12px;
-  padding:8px 0;
+  margin-bottom:10px;
+  padding:6px 0;
   border-bottom:1px dotted var(--border);
 }
 .toc-item a{
   color:var(--text);
   text-decoration:none;
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
   transition:color .2s;
-  font-size:1.05em;
+  font-size:1em;
   cursor:pointer;
 }
 .toc-item a:hover{color:var(--accent)}
-.chapter{
-  height:100%;
-  display:flex;
-  flex-direction:column;
-}
 .chapter-title{
-  font-size:2.2em;
+  font-size:2em;
   font-weight:700;
   text-align:center;
-  margin-bottom:50px;
+  margin-bottom:40px;
   color:var(--accent);
   line-height:1.3;
   font-variant:small-caps;
@@ -315,8 +344,8 @@ body{
 .chapter-title::after{
   content:'❦';
   display:block;
-  margin-top:20px;
-  font-size:.6em;
+  margin-top:15px;
+  font-size:.5em;
   opacity:.4;
 }
 .chapter-content{
@@ -324,29 +353,18 @@ body{
   hyphens:auto;
   line-height:1.9;
   font-size:1.05em;
-  flex:1;
-  overflow-y:auto;
 }
 .chapter-content p{
-  margin-bottom:1.4em;
+  margin-bottom:1.2em;
   text-indent:1.5em;
 }
-.chapter-content p:first-of-type{
+.chapter-content p:first-child,
+.chapter-content > p:first-of-type{
   text-indent:0;
 }
-.chapter-content p:first-of-type::first-letter{
-  font-size:3.5em;
-  float:left;
-  line-height:.8;
-  margin-right:.1em;
-  margin-top:.1em;
-  color:var(--accent);
-  font-weight:700;
-  font-family:'Palatino Linotype','Book Antiqua',Palatino,serif;
-}
 .chapter-content h2{
-  font-size:1.6em;
-  margin:2.5em 0 1em;
+  font-size:1.5em;
+  margin:2em 0 1em;
   color:var(--accent);
   font-weight:600;
   text-align:center;
@@ -354,59 +372,46 @@ body{
   letter-spacing:.05em;
 }
 .chapter-content h3{
-  font-size:1.3em;
-  margin:2em 0 .8em;
+  font-size:1.25em;
+  margin:1.8em 0 .8em;
   color:var(--accent-light);
   font-weight:600;
   font-style:italic;
 }
 .chapter-content h4{
-  font-size:1.1em;
+  font-size:1.05em;
   margin:1.5em 0 .6em;
   color:var(--accent-light);
   font-weight:600;
 }
 .chapter-content blockquote{
-  margin:2em 2em;
-  padding:1em 1.5em;
+  margin:1.5em 1.5em;
+  padding:.8em 1.2em;
   border-left:4px solid var(--accent);
   background:rgba(107,68,35,.05);
   font-style:italic;
-  position:relative;
-}
-.chapter-content blockquote::before{
-  content:'"';
-  position:absolute;
-  top:-10px;
-  left:10px;
-  font-size:3em;
-  color:var(--accent);
-  opacity:.3;
-  font-family:Georgia,serif;
 }
 .chapter-content blockquote p{
   text-indent:0;
-  margin-bottom:.8em;
+  margin-bottom:.6em;
 }
 .chapter-content ul,.chapter-content ol{
-  margin:1.5em 2em;
+  margin:1.2em 1.5em;
 }
 .chapter-content li{
-  margin-bottom:.6em;
+  margin-bottom:.5em;
   line-height:1.7;
 }
 .chapter-content strong{
   font-weight:700;
   color:var(--accent);
 }
-.chapter-content em{
-  font-style:italic;
-}
+.chapter-content em{font-style:italic}
 .chapter-content hr{
   border:none;
   height:1px;
   background:linear-gradient(to right,transparent,var(--accent),transparent);
-  margin:3em 0;
+  margin:2.5em 0;
   opacity:.3;
 }
 .colophon{
@@ -422,22 +427,26 @@ body{
 }
 @media(max-width:768px){
   .book-container{box-shadow:none}
-  .page{padding:30px 20px}
-  .book-title{font-size:2em}
-  .chapter-title{font-size:1.6em;margin-bottom:30px}
-  .controls{top:10px;right:10px;padding:8px 12px;gap:6px}
-  .ctrl-btn{padding:5px 10px;font-size:12px}
-  .theme-dot{width:20px;height:20px}
-  .nav-controls{bottom:10px;padding:10px 15px;gap:10px}
-  .nav-btn{width:36px;height:36px;font-size:16px}
-  .page-indicator{font-size:12px;min-width:60px}
-  .book-cover::before{top:20px;left:20px;right:20px;bottom:20px}
-  .chapter-content{font-size:1em;line-height:1.8}
+  .page{padding:40px 20px 70px}
+  .book-title{font-size:1.8em}
+  .book-subtitle{font-size:1em}
+  .chapter-title{font-size:1.4em;margin-bottom:25px}
+  .controls{top:8px;right:8px;padding:6px 10px;gap:5px}
+  .ctrl-btn{padding:4px 8px;font-size:11px}
+  .theme-dot{width:18px;height:18px}
+  .nav-controls{bottom:8px;padding:8px 14px;gap:8px}
+  .nav-btn{width:34px;height:34px;font-size:15px}
+  .page-indicator{font-size:11px;min-width:55px}
+  .book-cover::before{top:15px;left:15px;right:15px;bottom:15px}
+  .chapter-content{font-size:.95em;line-height:1.8}
+  .chapter-content blockquote{margin:1em .5em;padding:.6em .8em}
+  .chapter-content h2{font-size:1.3em}
+  .chapter-content h3{font-size:1.15em}
 }
 @media print{
   .controls,.nav-controls{display:none}
   .book-container{box-shadow:none;max-width:100%}
-  .page{display:block!important;page-break-after:always}
+  .page{position:relative;display:block!important;page-break-after:always;opacity:1;transform:none}
 }
 .ch>.cb>p:first-of-type::first-letter{font-size:3.2em;float:left;line-height:.8;margin-right:.08em;margin-top:.07em;font-weight:700;color:var(--accent)}
 .cb blockquote{border-left:3px solid var(--accent);margin:1.5em 0;padding:.8em 1.2em;font-style:italic;opacity:.85;background:var(--accent-bg);border-radius:0 8px 8px 0}
@@ -467,6 +476,7 @@ body{
 <button class="theme-dot active" style="background:#f5f1e8" onclick="st('sepia')" title="Sepia"></button>
 <button class="theme-dot" style="background:#1a1a1a" onclick="st('dark')" title="Dark"></button>
 </div>
+<div class="book-viewport">
 <div class="book-container" id="mc">
 <div class="page active" data-page="0">
 <div class="book-cover">
@@ -476,12 +486,12 @@ body{
 <div class="book-author">Gregorio F. Zaide &amp; Sonia M. Zaide</div>
 <div class="book-edition">Second Edition</div>
 </div>
+<div class="page-num">Cover</div>
 </div>
 <div class="page" data-page="1">
-<div class="toc-page">
 <div class="toc-title">Contents</div>
 <ol class="toc-list">${tocHtml.replace(/<li><a href="#([^"]+)" data-target="[^"]+">([^<]+)<\/a><\/li>/g, (match, id, title) => '<li class="toc-item"><a data-chapter="'+id+'">'+title+'</a></li>')}</ol>
-</div>
+<div class="page-num">Contents</div>
 </div>
 ${chaptersHtml}
 <div class="page" data-page="${chapterData.length + 2}">
@@ -490,6 +500,8 @@ ${chaptersHtml}
 <p>Based on "Jose Rizal: Life, Works, and Writings of a Genius,<br>Writer, Scientist, and National Hero"</p>
 <p>Second Edition by Gregorio F. Zaide and Sonia M. Zaide</p>
 <p style="margin-top:20px;font-style:italic">A Digital Edition</p>
+</div>
+<div class="page-num">Colophon</div>
 </div>
 </div>
 </div>
@@ -504,27 +516,54 @@ const pages = document.querySelectorAll('.page');
 const totalPages = pages.length;
 let touchStartX = 0;
 let touchEndX = 0;
+let isAnimating = false;
 
-function updatePage() {
+function updatePage(direction) {
+  if (isAnimating) return;
+  isAnimating = true;
+  
+  const oldPage = pages[currentPage];
+  
   pages.forEach((page, idx) => {
-    page.classList.toggle('active', idx === currentPage);
+    page.classList.remove('active', 'flip-out', 'flip-in', 'flip-out-rev', 'flip-in-rev');
+    if (idx === currentPage) {
+      page.classList.add('active');
+    }
   });
+  
+  if (direction && oldPage) {
+    if (direction === 'next') {
+      oldPage.classList.add('flip-out');
+      pages[currentPage].classList.add('flip-in');
+    } else if (direction === 'prev') {
+      oldPage.classList.add('flip-out-rev');
+      pages[currentPage].classList.add('flip-in-rev');
+    }
+  }
+  
   document.getElementById('pageIndicator').textContent = (currentPage + 1) + ' / ' + totalPages;
   document.getElementById('prevBtn').disabled = currentPage === 0;
   document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+  
+  setTimeout(() => {
+    isAnimating = false;
+    pages.forEach(page => {
+      page.classList.remove('flip-out', 'flip-in', 'flip-out-rev', 'flip-in-rev');
+    });
+  }, 500);
 }
 
 function nextPage() {
-  if (currentPage < totalPages - 1) {
+  if (currentPage < totalPages - 1 && !isAnimating) {
     currentPage++;
-    updatePage();
+    updatePage('next');
   }
 }
 
 function prevPage() {
-  if (currentPage > 0) {
+  if (currentPage > 0 && !isAnimating) {
     currentPage--;
-    updatePage();
+    updatePage('prev');
   }
 }
 
@@ -533,8 +572,12 @@ function goToChapter(id) {
   if (chapterEl) {
     const pageContainer = chapterEl.closest('.page');
     if (pageContainer) {
-      currentPage = parseInt(pageContainer.getAttribute('data-page'));
-      updatePage();
+      const targetPage = parseInt(pageContainer.getAttribute('data-page'));
+      if (targetPage !== currentPage) {
+        const direction = targetPage > currentPage ? 'next' : 'prev';
+        currentPage = targetPage;
+        updatePage(direction);
+      }
     }
   }
 }
@@ -561,19 +604,25 @@ function fs(d){
 
 // Keyboard navigation
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
-  if (e.key === 'ArrowLeft') prevPage();
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    nextPage();
+  }
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    prevPage();
+  }
 });
 
 // Touch/swipe navigation
 document.addEventListener('touchstart', function(e) {
   touchStartX = e.changedTouches[0].screenX;
-});
+}, {passive: true});
 
 document.addEventListener('touchend', function(e) {
   touchEndX = e.changedTouches[0].screenX;
   handleSwipe();
-});
+}, {passive: true});
 
 function handleSwipe() {
   const diff = touchStartX - touchEndX;
@@ -582,6 +631,16 @@ function handleSwipe() {
     else prevPage();
   }
 }
+
+// Click on left/right side of book to navigate
+document.querySelector('.book-viewport').addEventListener('click', function(e) {
+  if (e.target.closest('.nav-controls') || e.target.closest('.controls') || e.target.closest('a')) return;
+  const rect = this.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const width = rect.width;
+  if (x < width * 0.3) prevPage();
+  else if (x > width * 0.7) nextPage();
+});
 
 updatePage();
 </script>
